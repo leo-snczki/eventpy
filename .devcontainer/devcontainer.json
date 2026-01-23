@@ -5,13 +5,15 @@
       "version": "3.12"
     }
   },
+  "postCreateCommand": "pip install flask bootstrap-flask",
    "customizations": {
     "vscode": {
       "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
         "ms-python.black-formatter",
         "oderwat.indent-rainbow",
         "kevinrose.vsc-python-indent",
-        "redhat.vscode-yaml",
         "ms-vsliveshare.vsliveshare"
       ]
     }
