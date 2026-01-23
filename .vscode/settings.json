@@ -1,0 +1,10 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": [],
+    "liveshare.guestApprovalRequired":false,
+    "liveshare.anonymousGuestApproval":"accept",
+    "liveshare.allowGuestDebugControl": true,
+    "liveshare.autoShareTerminals": true,
+    "liveshare.languages.allowGuestCommandControl": true,
+    "liveshare.allowGuestTaskControl": false
+}
