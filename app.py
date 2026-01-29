@@ -2,7 +2,7 @@ import os
 from flask import Flask, g, render_template, request, redirect, url_for, session
 from flask_bootstrap import Bootstrap5
 from datetime import datetime
-from models import Utilizador, Evento
+from models import Utilizador, Evento, Lugar
 from dotenv import load_dotenv
 from peewee import *
 
@@ -87,14 +87,27 @@ def eventos():
     if filtros:
         query = query.where(*filtros)
 
-    preco = args.get("preco")
-    if preco == "asc":
-        query = query.order_by(Evento.preco.asc())
-    elif preco == "desc":
-        query = query.order_by(Evento.preco.desc())
-    elif preco:
-        min_p, max_p = preco.split("-")
-        query = query.where(Evento.preco.between(int(min_p), int(max_p)))
+    preco = request.args.get("preco")
+
+    if preco:
+        query = (
+            Evento
+            .select(Evento, fn.MIN(Lugar.preco_base).alias("preco_min"))
+            .join(Lugar)
+            .group_by(Evento)
+        )
+
+        if preco == "asc":
+            query = query.order_by(fn.MIN(Lugar.preco_base).asc())
+
+        elif preco == "desc":
+            query = query.order_by(fn.MIN(Lugar.preco_base).desc())
+
+        else:
+            min_p, max_p = preco.split("-")
+            query = query.having(
+                fn.MIN(Lugar.preco_base).between(int(min_p), int(max_p))
+            )
 
     duracao = args.get("duracao")
     if duracao == "120+":
