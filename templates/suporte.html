@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Suporte | Eventpy{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Centro de Suporte</h1>
+        <p class="lead text-muted">
+            Estamos aqui para ajudar em todas as etapas da sua experiência.
+        </p>
+    </div>
+
+    
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <h5>Bilhetes:</h5>
+            <p class="text-muted">
+                Dúvidas sobre compras, cancelamentos ou reembolsos.
+            </p>
+        </div>
+        <div class="col-md-4">
+            <h5>Conta:</h5>
+            <p class="text-muted">
+                Problemas com login, dados pessoais ou histórico de compras.
+            </p>
+        </div>
+        <div class="col-md-4">
+            <h5>Eventos:</h5>
+            <p class="text-muted">
+                Informações sobre eventos, lugares e horários.
+            </p>
+        </div>
+    </div>
+
+    
+    <div class="mb-5">
+        <h3>Perguntas Frequentes (FAQ)</h3>
+
+        <div class="accordion" id="faqAccordion">
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        Como posso comprar bilhetes?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse show">
+                    <div class="accordion-body">
+                        Basta selecionar o evento pretendido, escolher o tipo de lugar
+                        e seguir os passos indicados até à confirmação da compra.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        Posso cancelar ou pedir reembolso?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        Os pedidos de cancelamento ou reembolso dependem da política
+                        definida pelo organizador do evento.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        Recebo fatura da compra?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        Sim. Após a confirmação do pagamento, a fatura ou recibo
+                        fica disponível na sua área pessoal.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    
+    <div class="mb-5">
+        <h3>Contactar o Suporte</h3>
+        <p class="text-muted">
+            Não encontrou a resposta que procurava? Envie-nos uma mensagem.
+        </p>
+
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-control" name="nome" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" name="email" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Assunto</label>
+                <select class="form-select" name="assunto">
+                    <option>Bilhetes</option>
+                    <option>Conta</option>
+                    <option>Eventos</option>
+                    <option>Outros</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mensagem</label>
+                <textarea class="form-control" name="mensagem" rows="4" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Enviar Mensagem
+            </button>
+        </form>
+    </div>
+
+    <!-- Contactos diretos -->
+    <div class="mb-4">
+        <h3>Contactos Diretos</h3>
+        <ul class="list-unstyled">
+            <li><strong>Email:</strong> suporte@Eventpy.pt</li>
+            <li><strong>Telefone:</strong> +351 910 000 000</li>
+            <li><strong>Horário:</strong> Segunda a Sexta, 09h – 18h</li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <p class="text-center text-muted">
+        © {{ current_year }} CulturaViva · Centro de Suporte
+    </p>
+
+</div>
+{% endblock %}

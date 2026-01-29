@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Registo de Utilizador{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Criar Conta</h4>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('registro') }}">
+
+                        <div class="mb-3">
+                            <label class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" name="nome" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Palavra-passe</label>
+                            <input type="password" class="form-control" name="senha" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar Palavra-passe</label>
+                            <input type="password" class="form-control" name="confirmar_senha" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" class="form-control" name="telefone">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Documento de Identificação</label>
+                            <input type="text" class="form-control" name="documento_identificacao">
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                Registar
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="card-footer text-center">
+                    <small>
+                        Já tem conta?
+                        <a href="{{ url_for('login') }}">Iniciar sessão</a>
+                    </small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

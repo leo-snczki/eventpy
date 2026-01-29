@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Minha Conta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h2 class="mb-4">Minha Conta</h2>
+
+    <div class="row">
+        <!-- Dados do Utilizador -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    Dados Pessoais
+                </div>
+                <div class="card-body">
+                    <p><strong>Nome:</strong> {{ utilizador.nome }}</p>
+                    <p><strong>Email:</strong> {{ utilizador.email }}</p>
+                    <p><strong>Telefone:</strong> {{ utilizador.telefone }}</p>
+                    <p><strong>Documento:</strong> {{ utilizador.documento_identificacao }}</p>
+                    <p class="text-muted">
+                        Conta criada em {{ utilizador.criado_em }}
+                    </p>
+
+                    <button class="btn btn-primary btn-sm w-100 mb-2" data-bs-toggle="modal"
+                        data-bs-target="#editarConta">
+                        Editar Dados
+                    </button>
+
+                    <form method="POST" action="{{ url_for('apagar_conta') }}"
+                        onsubmit="return confirm('Tem a certeza que deseja apagar a sua conta?');">
+                        <button type="submit" class="btn btn-danger btn-sm w-100">
+                            Apagar Conta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    Meus Bilhetes
+                </div>
+                <div class="card-body">
+
+                    {% if encomendas %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Evento</th>
+                                    <th>Data</th>
+                                    <th>Qtd.</th>
+                                    <th>Valor</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in encomendas %}
+                                <tr>
+                                    <td>{{ e.evento_titulo }}</td>
+                                    <td>{{ e.data_encomenda }}</td>
+                                    <td>{{ e.quantidade }}</td>
+                                    <td>{{ e.valor_total }} €</td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ e.estado }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">
+                        Ainda não comprou bilhetes.
+                    </p>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="editarConta" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('index') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Conta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" name="nome" value="{{ utilizador.nome }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" value="{{ utilizador.email }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" class="form-control" name="telefone" value="{{ utilizador.telefone }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Documento</label>
+                        <input type="text" class="form-control" name="documento_identificacao"
+                            value="{{ utilizador.documento_identificacao }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nova Palavra-passe</label>
+                        <input type="password" class="form-control" name="senha">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Guardar Alterações</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

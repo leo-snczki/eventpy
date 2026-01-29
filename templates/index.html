@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Bem-vindo ao nosso site</h1>
+        <p class="text-muted">Escolha uma das opções abaixo para continuar</p>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Compra -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Comprar</h5>
+                    <p>Ver produtos e realizar compras</p>
+                    <a href="{{ url_for('compra') }}" class="btn btn-primary w-100">Ir</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Histórico de Compras</h5>
+                    <p>Ver compras anteriores</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary w-100">Ver</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Utilizador -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Utilizador</h5>
+                    <p>Gerir perfil e dados</p>
+                    <a href="{{ url_for('utilizador') }}" class="btn btn-primary w-100">Abrir</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Login</h5>
+                    <p>Entrar na sua conta</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-success w-100">Entrar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registro -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Criar Conta</h5>
+                    <p>Registar novo utilizador</p>
+                    <a href="{{ url_for('registro') }}" class="btn btn-warning w-100">Registar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sobre -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Sobre</h5>
+                    <p>Informações sobre o site</p>
+                    <a href="{{ url_for('sobre') }}" class="btn btn-secondary w-100">Ver</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suporte -->
+        <div class="col-md-4 mx-auto">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Suporte</h5>
+                    <p>Contactar ajuda e suporte</p>
+                    <a href="{{ url_for('suporte') }}" class="btn btn-danger w-100">Abrir</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
