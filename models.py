@@ -1,5 +1,6 @@
 from peewee import *
 from database import db
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 class BaseModel(Model):
@@ -11,7 +12,14 @@ class Utilizador(BaseModel):
     email = CharField(unique=True)
     telefone = CharField()
     documento_identificacao = CharField()
+    senha_hash = CharField()
     criado_em = DateTimeField(default=datetime.now)
+    
+    def set_senha(self, senha):
+        self.senha_hash = generate_password_hash(senha)
+    
+    def verificar_senha(self, senha):
+        return check_password_hash(self.senha_hash, senha)
 
 class Evento(BaseModel):
     titulo = CharField()
