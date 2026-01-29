@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Eventpy{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+
+    <h2 class="mb-4 text-center">Procurar Eventos</h2>
+
+    <div class="row">
+        <!-- FILTROS -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    Filtros
+                </div>
+
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('eventos') }}">
+
+                        <!-- Tipo de Evento -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Tipo de Evento</strong></label>
+                            <select name="tipo" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="concerto">Concertos</option>
+                                <option value="teatro">Teatro</option>
+                                <option value="palestra">Palestras</option>
+                            </select>
+                        </div>
+
+                        <!-- Nome -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Nome do Evento</strong></label>
+                            <input type="text" class="form-control" name="nome" placeholder="Nome do evento">
+                        </div>
+
+                        <!-- Localização -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Localização</strong></label>
+                            <input type="text" class="form-control" name="local" placeholder="Cidade / Local">
+                        </div>
+
+                        <!-- Preço -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Preço</strong></label>
+                            <select name="preco" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="asc">Mais barato</option>
+                                <option value="desc">Mais caro</option>
+                                <option value="0-10">0€ - 10€</option>
+                                <option value="10-20">10€ - 20€</option>
+                                <option value="20-40">20€ - 40€</option>
+                            </select>
+                        </div>
+
+                        <!-- Duração -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Duração</strong></label>
+                            <select name="duracao" class="form-select">
+                                <option value="">Todas</option>
+                                <option value="0-60">Até 60 min</option>
+                                <option value="60-120">60 – 120 min</option>
+                                <option value="120+">Mais de 120 min</option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                Aplicar Filtros
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTA DE EVENTOS -->
+        <div class="col-md-9">
+            {% if eventos %}
+            <div class="row">
+                {% for evento in eventos %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ evento.titulo }}</h5>
+
+                            <p class="text-muted">
+                                {{ evento.tipo | capitalize }}
+                            </p>
+
+                            <p><strong>Preço:</strong> {{ evento.preco }} €</p>
+                            <p><strong>Duração:</strong> {{ evento.duracao }} min</p>
+                            <p><strong>Local:</strong> {{ evento.local }}</p>
+
+                            <a href="{{ url_for('comprar_bilhetes', id=evento.id) }}" class="btn btn-success w-100">
+                                Ver Evento
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                Nenhum evento encontrado com estes filtros.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

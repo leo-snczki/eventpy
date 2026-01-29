@@ -2,7 +2,7 @@ import os
 from flask import Flask, g, render_template, request, redirect, url_for, session
 from flask_bootstrap import Bootstrap5
 from datetime import datetime
-from models import Utilizador
+from models import Utilizador, Evento
 from dotenv import load_dotenv
 from peewee import *
 
@@ -64,9 +64,50 @@ def registro():
         return redirect(url_for("login"))
     return render_template("registro.html")
 
-@app.route("/compra")
-def compra():
-    return render_template("compra.html")
+@app.route("/carrinho")
+def carrinho():
+    return render_template("carrinho.html")
+
+@app.route("/eventos")
+def eventos():
+    filtros = []
+    query = Evento.select()
+
+    args = request.args
+
+    if args.get("tipo"):
+        filtros.append(Evento.tipo == args["tipo"])
+
+    if args.get("nome"):
+        filtros.append(Evento.titulo.contains(args["nome"]))
+
+    if args.get("local"):
+        filtros.append(Evento.local.contains(args["local"]))
+
+    if filtros:
+        query = query.where(*filtros)
+
+    preco = args.get("preco")
+    if preco == "asc":
+        query = query.order_by(Evento.preco.asc())
+    elif preco == "desc":
+        query = query.order_by(Evento.preco.desc())
+    elif preco:
+        min_p, max_p = preco.split("-")
+        query = query.where(Evento.preco.between(int(min_p), int(max_p)))
+
+    duracao = args.get("duracao")
+    if duracao == "120+":
+        query = query.where(Evento.duracao > 120)
+    elif duracao:
+        min_d, max_d = duracao.split("-")
+        query = query.where(Evento.duracao.between(int(min_d), int(max_d)))
+
+    return render_template("eventos.html", eventos=query)
+
+@app.route("/comprar_bilhetes/<int:id>")
+def comprar_bilhetes(id):
+    evento = Evento.get(Evento.id == id)
 
 @app.route("/utilizador")
 def utilizador():

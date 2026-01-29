@@ -12,13 +12,23 @@
 
     <div class="row g-4">
 
-        <!-- Compra -->
         <div class="col-md-4">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <h5>Comprar</h5>
-                    <p>Ver produtos e realizar compras</p>
-                    <a href="{{ url_for('compra') }}" class="btn btn-primary w-100">Ir</a>
+                    <h5>Ver eventos disponíveis</h5>
+                    <p>Teatro, Concertos, Festivais e mais...</p>
+                    <a href="{{ url_for('eventos') }}" class="btn btn-success w-100">Ver</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carrinho -->
+        <div class="col-md-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5>Checkout</h5>
+                    <p>Finalizar compra</p>
+                    <a href="{{ url_for('carrinho') }}" class="btn btn-primary w-100">Ir</a>
                 </div>
             </div>
         </div>
