@@ -41,17 +41,18 @@
                             <input type="text" class="form-control" name="local" placeholder="Cidade / Local">
                         </div>
 
-                        <!-- Preço -->
                         <div class="mb-3">
-                            <label class="form-label"><strong>Preço</strong></label>
-                            <select name="preco" class="form-select">
-                                <option value="">Todos</option>
-                                <option value="asc">Mais barato</option>
-                                <option value="desc">Mais caro</option>
-                                <option value="0-10">0€ - 10€</option>
-                                <option value="10-20">10€ - 20€</option>
-                                <option value="20-40">20€ - 40€</option>
-                            </select>
+                            <label class="form-label"><strong>Preco</strong></label>
+                            <div class="row">
+                                <div class="col">
+                                    <input type="number" step="0.01" class="form-control" name="preco_min"
+                                        placeholder="Min">
+                                </div>
+                                <div class="col">
+                                    <input type="number" step="0.01" class="form-control" name="preco_max"
+                                        placeholder="Max">
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Duração -->
@@ -90,11 +91,11 @@
                                 {{ evento.tipo | capitalize }}
                             </p>
 
-                            <p><strong>Preço:</strong> {{ evento.preco_min }} €</p>
+                            <p><strong>A partir de:</strong> {{ evento.preco_min }} €</p>
                             <p><strong>Duração:</strong> {{ evento.duracao }} min</p>
                             <p><strong>Local:</strong> {{ evento.local }}</p>
 
-                            <a href="{{ url_for('comprar_bilhetes', id=evento.id) }}" class="btn btn-success w-100">
+                            <a href="{{ url_for('escolher_lugar', id=evento.id) }}" class="btn btn-success w-100">
                                 Ver Evento
                             </a>
                         </div>
