@@ -22,8 +22,18 @@ class Utilizador(BaseModel):
         return check_password_hash(self.senha_hash, senha)
 
 class Evento(BaseModel):
+    TIPO_CONCERTO = "concerto"
+    TIPO_TEATRO = "teatros"
+    TIPO_PALESTRA = "Palestras"
+
+    TIPOS = (
+        (TIPO_CONCERTO, "Concerto"),
+        (TIPO_TEATRO, "Teatros"),
+        (TIPO_PALESTRA, "Palestras"),
+    )
     titulo = CharField()
     descricao = TextField()
+    tipo = CharField(choices=TIPOS)
     local = CharField()
     data_hora = DateTimeField()
     duracao = IntegerField()
