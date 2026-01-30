@@ -143,16 +143,6 @@ def comprar_bilhetes(id):
         lugares=lugares
     )
 
-@app.route("/escolher_lugar/<int:id>")
-def escolher_lugar(id):
-    evento = Evento.get_or_none(Evento.id == id)
-    if not evento:
-        flash("O evento não existe ou foi removido.", "warning")
-        return redirect(url_for("eventos"))
-
-    if evento.tipo == Evento.TIPO_CONCERTO:
-        return redirect(url_for("comprar_bilhetes", id=id))
-
 @app.route("/utilizador")
 def utilizador():
     if g.utilizador is None:
@@ -175,11 +165,65 @@ def apagar_conta():
 def sobre():
     return render_template("sobre.html")
 
+@app.route("/escolher_lugar/<int:evento_id>", methods=["GET", "POST"])
+def escolher_lugar(evento_id):
+    evento = Evento.get_or_none(Evento.id == evento_id)
+    if evento.tipo == Evento.TIPO_CONCERTO:
+        return redirect(url_for("comprar_bilhetes", id=evento.id))
+    if not evento:
+        flash("O evento não existe.", "warning")
+        return redirect(url_for("eventos"))
+
+    # Captura a fila selecionada via GET
+    fila_selecionada = request.args.get("fila")
+
+    # Pega todas as filas disponíveis do evento (não vendidas)
+    filas_query = (
+        Lugar
+        .select(Lugar.fila)
+        .where((Lugar.evento == evento) & (Lugar.vendido == False) & (Lugar.fila.is_null(False)))
+        .distinct()
+        .order_by(Lugar.fila)
+    )
+    filas = [f.fila for f in filas_query]
+
+    lugares = []
+    if fila_selecionada:
+        lugares = (
+            Lugar
+            .select()
+            .where((Lugar.evento == evento) & (Lugar.fila == fila_selecionada))
+            .order_by(Lugar.numero)
+        )
+
+    # Processa o POST de confirmação de lugares
+    if request.method == "POST":
+        selecionados = request.form.getlist("lugares_selecionados")
+        if not selecionados:
+            flash("Selecione pelo menos um lugar.", "warning")
+        else:
+            #
+            # Marca os lugares como vendidos mas ainda nao cria venda/bilhetes
+            for lugar_id in selecionados:
+                lugar = Lugar.get_or_none(Lugar.id == int(lugar_id))
+                if lugar and not lugar.vendido:
+                    lugar.vendido = True
+                    lugar.save()
+            flash(f"{len(selecionados)} lugar/es confirmado/s com sucesso!", "success")
+            # Redireciona para evitar reenvio de formulário
+            return redirect(url_for("escolher_lugar", evento_id=evento.id, fila=fila_selecionada))
+
+    return render_template(
+        "escolher_lugar.html",
+        evento=evento,
+        filas=filas,
+        fila_selecionada=fila_selecionada,
+        lugares=lugares
+    )
 
 @app.route("/suporte")
 def suporte():
     return render_template("suporte.html")
-
 
 if __name__ == "__main__":
     app.run(debug=True)

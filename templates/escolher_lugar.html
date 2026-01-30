@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Selecionar Lugares | Eventpy{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-3">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <h1 class="fw-bold">Selecionar Lugares</h1>
+        <p class="text-muted">
+            Escolha a fila e os lugares disponíveis para o evento.
+        </p>
+    </div>
+
+    <!-- Informação do Evento -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ evento.titulo }}</h5>
+            <ul class="list-unstyled mb-0">
+                <li><strong>Local:</strong> {{ evento.local }}</li>
+                <li><strong>Data:</strong> {{ evento.data_hora }}</li>
+                <li><strong>Tipo:</strong> {{ evento.tipo }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Seleção de Fila -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Escolher Fila</h5>
+
+            <div class="d-flex flex-wrap gap-2">
+                {% for fila in filas %}
+                <a href="?fila={{ fila }}" class="btn btn-outline-primary">
+                    Fila {{ fila }}
+                </a>
+                {% endfor %}
+            </div>
+
+            <p class="text-muted mt-2">
+                As filas estão organizadas por letras de A a Z.
+            </p>
+        </div>
+    </div>
+
+    <!-- Seleção de Lugares -->
+    {% if fila_selecionada %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                Lugares disponíveis – Fila {{ fila_selecionada }}
+            </h5>
+
+            <form method="post">
+                <div class="d-flex flex-wrap gap-2">
+                    {% for lugar in lugares %}
+                    {% if not lugar.vendido %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="lugares_selecionados"
+                            value="{{ lugar.id }}" id="lugar{{ lugar.id }}">
+                        <label class="form-check-label" for="lugar{{ lugar.id }}">
+                            {{ lugar.numero }}{{ fila_selecionada }}
+                        </label>
+                    </div>
+                    {% else %}
+                    <span class="badge bg-secondary">
+                        {{ lugar.numero }}{{ fila_selecionada }}
+                    </span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <p class="text-muted mt-3">
+                    Lugares a cinzento já se encontram vendidos.
+                </p>
+
+                <button type="submit" class="btn btn-success mt-3">
+                    Confirmar Lugares
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

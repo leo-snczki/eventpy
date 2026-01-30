@@ -95,7 +95,8 @@
                             <p><strong>Duração:</strong> {{ evento.duracao }} min</p>
                             <p><strong>Local:</strong> {{ evento.local }}</p>
 
-                            <a href="{{ url_for('escolher_lugar', id=evento.id) }}" class="btn btn-success w-100">
+                            <a href="{{ url_for('escolher_lugar', evento_id=evento.id) }}"
+                                class="btn btn-success w-100">
                                 Ver Evento
                             </a>
                         </div>
