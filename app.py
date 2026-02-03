@@ -59,6 +59,12 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/deslogar")
+def deslogar():
+    if g.utilizador is not None:
+        session.pop("user_id", None)
+    return redirect(url_for("index"))
+
 @app.route("/registro", methods=["GET", "POST"])
 def registro():
     if request.method == "POST":

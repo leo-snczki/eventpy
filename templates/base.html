@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,76 +8,100 @@
     {{ bootstrap.load_css() }}
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         body {
             padding-top: 70px;
             background-color: #f8f9fa;
         }
+
         .navbar-brand {
             font-weight: bold;
             font-size: 1.5rem;
         }
+
         .nav-link:hover {
             color: #ffc107 !important;
         }
+
         .hero {
             background: url('/static/images/banner.jpg') center/cover no-repeat;
             color: white;
             padding: 100px 0;
             text-align: center;
         }
+
         .hero h1 {
             font-size: 3rem;
             font-weight: bold;
         }
+
         .hero p {
             font-size: 1.2rem;
         }
+
         footer a {
             color: #ffc107;
             text-decoration: none;
         }
+
         footer a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}"><i class="fa-solid fa-ticket"></i> Eventpy</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    {% if g.utilizador %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('utilizador') }}"><i class="fa-solid fa-user"></i> Utilizador</a>
+                        <a class="nav-link" href="{{ url_for('utilizador') }}"><i class="fa-solid fa-user"></i>
+                            Utilizador</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                        <a class="nav-link" href="{{ url_for('deslogar') }}"><i class="fa-solid fa-power-off"></i>
+                            Deslogar</a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i>
+                            Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('eventos') }}"><i class="fa-solid fa-calendar-days"></i> Eventos</a>
+                        <a class="nav-link" href="{{ url_for('registro') }}"><i class="fa-solid fa-user-plus"></i>
+                            Registo</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('eventos') }}"><i class="fa-solid fa-calendar-days"></i>
+                            Eventos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('registro') }}"><i class="fa-solid fa-user-plus"></i> Registo</a>
+                        <a class="nav-link" href="{{ url_for('carrinho') }}"><i class="fa-solid fa-shopping-cart"></i>
+                            Carrinho</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('carrinho') }}"><i class="fa-solid fa-shopping-cart"></i> Carrinho</a>
+                        <a class="nav-link" href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Página
+                            Inicial</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Página Inicial</a>
+                        <a class="nav-link" href="{{ url_for('sobre') }}"><i class="fa-solid fa-info-circle"></i>
+                            Sobre</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('sobre') }}"><i class="fa-solid fa-info-circle"></i> Sobre</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('suporte') }}"><i class="fa-solid fa-headset"></i> Suporte</a>
+                        <a class="nav-link" href="{{ url_for('suporte') }}"><i class="fa-solid fa-headset"></i>
+                            Suporte</a>
                     </li>
                 </ul>
             </div>
@@ -89,7 +114,8 @@
         <div class="container">
             <h1>Descubra Eventos Culturais</h1>
             <p>Compre bilhetes e participe das melhores experiências culturais perto de si!</p>
-            <a href="{{ url_for('index') }}" class="btn btn-warning btn-lg mt-3"><i class="fa-solid fa-ticket"></i> Ver Eventos</a>
+            <a href="{{ url_for('index') }}" class="btn btn-warning btn-lg mt-3"><i class="fa-solid fa-ticket"></i> Ver
+                Eventos</a>
         </div>
     </div>
     {% endif %}
@@ -118,4 +144,5 @@
 
     {{ bootstrap.load_js() }}
 </body>
+
 </html>
