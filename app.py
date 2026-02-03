@@ -140,6 +140,28 @@ def apagar_conta():
     flash("Conta apagada com sucesso.", "success")
     return redirect(url_for("login"))
 
+@app.route("/editar_conta", methods=["POST"])
+def editar_conta():
+    if g.utilizador is None:
+        flash("Precisa de iniciar sessão.", "warning")
+        return redirect(url_for("login"))
+
+    user = g.utilizador
+
+    user.nome = request.form["nome"]
+    user.email = request.form["email"]
+    user.telefone = request.form.get("telefone")
+    user.documento_identificacao = request.form.get("documento_identificacao")
+
+    nova_senha = request.form.get("senha")
+    if nova_senha:
+        user.set_senha(nova_senha)
+
+    user.save()
+
+    flash("Dados atualizados com sucesso.", "success")
+    return redirect(url_for("utilizador"))
+
 
 @app.route("/sobre")
 def sobre():
