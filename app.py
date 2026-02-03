@@ -1,6 +1,7 @@
 import os
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap5
+from flask_mail import Mail, Message
 from datetime import datetime
 from models import Recibo, Utilizador, Evento, Lugar, Venda, Bilhete, db
 from dotenv import load_dotenv
@@ -11,6 +12,14 @@ load_dotenv()
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
 app.secret_key = os.getenv("SECRET_KEY")
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_USERNAME")
+
+mail = Mail(app)
 
 @app.before_request
 def carregar_utilizador():
@@ -226,9 +235,45 @@ def escolher_lugar(evento_id):
         lugares=lugares
     )
 
-@app.route("/suporte")
+from flask_mail import Message
+
+@app.route("/suporte", methods=["GET", "POST"])
 def suporte():
+    if request.method == "POST":
+        nome = request.form["nome"]
+        email = request.form["email"]
+        assunto = request.form["assunto"]
+        mensagem = request.form["mensagem"]
+
+        msg = Message(
+            subject=f"[Suporte] {assunto}",
+            recipients=["suporte@eventpy.pt"],
+            body=f"""
+Nova mensagem de suporte
+
+Nome: {nome}
+Email: {email}
+Assunto: {assunto}
+
+Mensagem:
+{mensagem}
+"""
+        )
+
+        resposta = Message(
+            subject="Recebemos a sua mensagem",
+            recipients=[email],
+            body="Obrigado pelo contacto. A nossa equipa irá responder em breve."
+        )
+
+        mail.send(resposta)
+        mail.send(msg)
+
+        flash("Mensagem enviada com sucesso.", "success")
+        return redirect(url_for("suporte"))
+
     return render_template("suporte.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -103,6 +103,23 @@ self: super: {
       self."werkzeug"
     ];
   };
+  "flask-mail" = super.buildPythonPackage rec {
+    pname = "flask-mail";
+    version = "0.10.0";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/e4/c0/a81083da779f482494d49195d8b6c9fde21072558253e4a9fb2ec969c3c1/flask_mail-0.10.0-py3-none-any.whl";
+      sha256 = "1rsi9qnf5qf1z4dsx4jphn0zlsx129lapsqikcfl9cqvjf8f8ld4";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."blinker"
+      self."flask"
+    ];
+  };
   "importlib-metadata" = super.buildPythonPackage rec {
     pname = "importlib-metadata";
     version = "8.7.1";
