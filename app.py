@@ -123,6 +123,7 @@ def eventos():
 @app.route("/utilizador")
 def utilizador():
     if g.utilizador is None:
+        flash("Precisa de iniciar sessão para aceder ao perfil.", "warning")
         return redirect(url_for("login"))
     return render_template("utilizador.html", utilizador=g.utilizador)
 
