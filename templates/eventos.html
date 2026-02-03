@@ -6,7 +6,16 @@
 <div class="container-fluid mt-4">
 
     <h2 class="mb-4 text-center">Procurar Eventos</h2>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     <div class="row">
         <!-- FILTROS -->
         <div class="col-md-3">
@@ -18,7 +27,6 @@
                 <div class="card-body">
                     <form method="GET" action="{{ url_for('eventos') }}">
 
-                        <!-- Tipo de Evento -->
                         <div class="mb-3">
                             <label class="form-label"><strong>Tipo de Evento</strong></label>
                             <select name="tipo" class="form-select">
@@ -29,13 +37,11 @@
                             </select>
                         </div>
 
-                        <!-- Nome -->
                         <div class="mb-3">
                             <label class="form-label"><strong>Nome do Evento</strong></label>
                             <input type="text" class="form-control" name="nome" placeholder="Nome do evento">
                         </div>
 
-                        <!-- Localização -->
                         <div class="mb-3">
                             <label class="form-label"><strong>Localização</strong></label>
                             <input type="text" class="form-control" name="local" placeholder="Cidade / Local">
@@ -55,13 +61,12 @@
                             </div>
                         </div>
 
-                        <!-- Duração -->
                         <div class="mb-3">
                             <label class="form-label"><strong>Duração</strong></label>
                             <select name="duracao" class="form-select">
                                 <option value="">Todas</option>
                                 <option value="0-60">Até 60 min</option>
-                                <option value="60-120">60 – 120 min</option>
+                                <option value="60-120">60 - 120 min</option>
                                 <option value="120+">Mais de 120 min</option>
                             </select>
                         </div>
@@ -84,21 +89,26 @@
                 {% for evento in eventos %}
                 <div class="col-md-4 mb-4">
                     <div class="card shadow h-100">
-                        <div class="card-body">
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ evento.titulo }}</h5>
-
-                            <p class="text-muted">
-                                {{ evento.tipo | capitalize }}
-                            </p>
-
+                            <p class="text-muted">{{ evento.tipo | capitalize }}</p>
                             <p><strong>A partir de:</strong> {{ evento.preco_min }} €</p>
                             <p><strong>Duração:</strong> {{ evento.duracao }} min</p>
                             <p><strong>Local:</strong> {{ evento.local }}</p>
 
-                            <a href="{{ url_for('escolher_lugar', evento_id=evento.id) }}"
-                                class="btn btn-success w-100">
-                                Ver Evento
-                            </a>
+                            <div class="mt-auto d-grid gap-2">
+                                <!-- Botão Adicionar ao Carrinho -->
+                                <a href="{{ url_for('escolher_lugar', evento_id=evento.id) }}"
+                                    class="btn btn-outline-primary w-100">
+                                    Adicionar ao Carrinho
+                                </a>
+
+                                <!-- Botão Comprar Agora -->
+                                <a href="{{ url_for('comprar_agora', evento_id=evento.id) }}"
+                                    class="btn btn-success w-100">
+                                    Comprar Agora
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

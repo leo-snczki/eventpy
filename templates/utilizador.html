@@ -6,7 +6,16 @@
 <div class="container mt-5">
 
     <h2 class="mb-4">Minha Conta</h2>
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     <div class="row">
         <!-- Dados do Utilizador -->
         <div class="col-md-4">
@@ -55,6 +64,8 @@
                                     <th>Data</th>
                                     <th>Qtd.</th>
                                     <th>Valor</th>
+                                    <th>NIF</th>
+                                    <th>Recibo</th>
                                     <th>Estado</th>
                                 </tr>
                             </thead>
@@ -65,10 +76,10 @@
                                     <td>{{ e.data_encomenda }}</td>
                                     <td>{{ e.quantidade }}</td>
                                     <td>{{ e.valor_total }} €</td>
+                                    <td>{{ e.nif }}</td>
+                                    <td>{{ e.valor_recibo }} €</td>
                                     <td>
-                                        <span class="badge bg-success">
-                                            {{ e.estado }}
-                                        </span>
+                                        <span class="badge bg-success">{{ e.estado }}</span>
                                     </td>
                                 </tr>
                                 {% endfor %}

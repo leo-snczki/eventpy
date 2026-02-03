@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Comprar Agora | Eventpy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h1 class="fw-bold mb-4">Comprar Agora – {{ evento.titulo }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Informações do Evento</h5>
+            <ul class="list-unstyled mb-0">
+                <li><strong>Local:</strong> {{ evento.local }}</li>
+                <li><strong>Data:</strong> {{ evento.data_hora }}</li>
+                <li><strong>Tipo:</strong> {{ evento.tipo }}</li>
+                <li><strong>Duração:</strong> {{ evento.duracao }} min</li>
+            </ul>
+        </div>
+    </div>
+
+    <form method="post" action="{{ url_for('finalizar_compra_agora', evento_id=evento.id) }}">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Selecionar Bilhetes</h5>
+
+                {% if evento.tipo == "Concerto" %}
+                <p>Os bilhetes são para a pista, sem lugares marcados.</p>
+                <div class="mb-3">
+                    <label class="form-label">Quantidade de bilhetes (máx. 2 por conta/NIF)</label>
+                    <input type="number" class="form-control" name="quantidade" min="1" max="2" value="1" required>
+                </div>
+                <p class="text-muted">Lugares disponíveis: {{ lugares|length }}</p>
+                {% else %}
+                <div class="d-flex flex-wrap gap-3">
+                    {% for lugar in lugares %}
+                    {% if not lugar.vendido %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="lugares_selecionados"
+                            value="{{ lugar.id }}" id="lugar{{ lugar.id }}">
+                        <label class="form-check-label" for="lugar{{ lugar.id }}">
+                            {{ lugar.numero if lugar.numero else "Pista" }} {{ lugar.fila if lugar.fila else "" }} - {{
+                            lugar.preco_base }} €
+                        </label>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <p class="text-muted mt-2">Lugares a cinzento já se encontram vendidos.</p>
+                {% endif %}
+
+                <button type="submit" class="btn btn-success mt-3">Finalizar Compra</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
