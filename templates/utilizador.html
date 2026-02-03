@@ -20,7 +20,7 @@
                     <p><strong>Telefone:</strong> {{ utilizador.telefone }}</p>
                     <p><strong>Documento:</strong> {{ utilizador.documento_identificacao }}</p>
                     <p class="text-muted">
-                        Conta criada em {{ utilizador.criado_em }}
+                        Conta criada em {{ utilizador.criado_em.strftime('%d/%m/%Y') }}.
                     </p>
 
                     <button class="btn btn-primary btn-sm w-100 mb-2" data-bs-toggle="modal"
