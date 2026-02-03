@@ -4,12 +4,215 @@
 { pkgs, fetchurl, fetchgit, fetchhg }:
 
 self: super: {
-  "readkeys" = super.buildPythonPackage rec {
-    pname = "readkeys";
-    version = "1.0.2";
+  "WTForms" = super.buildPythonPackage rec {
+    pname = "WTForms";
+    version = "3.2.1";
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/22/42/0be0768148dbc7d3f36d19e419edc3abd93ea05037b1debed50dfb880a4a/readkeys-1.0.2-py3-none-any.whl";
-      sha256 = "1652yva8fbfrnrxk8k01dxbprdqp9hbiy0rbrrd4kpr60x7kq49b";
+      url = "https://files.pythonhosted.org/packages/08/c9/2088fb5645cd289c99ebe0d4cdcc723922a1d8e1beaefb0f6f76dff9b21c/wtforms-3.2.1-py3-none-any.whl";
+      sha256 = "1m0gbrqx160n38fr4x9ms1llijj362m127pjcdj2imqxp9vssfsq";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."markupsafe"
+    ];
+  };
+  "blinker" = super.buildPythonPackage rec {
+    pname = "blinker";
+    version = "1.9.0";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl";
+      sha256 = "1g085zyvc78lj45bc95llsjdxgap1i81v7a5ygr9yq8b12lzl3ms";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [];
+  };
+  "bootstrap-flask" = super.buildPythonPackage rec {
+    pname = "bootstrap-flask";
+    version = "2.5.0";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/a6/bd/a61a69ba3595735049f5acdcaa049a6c731be4b083dad4ae4b3a85b21e90/bootstrap_flask-2.5.0-py3-none-any.whl";
+      sha256 = "0niapx5lznm4d8pjik4svvzlmifdmida5lkz3szn4q6lwhzj0xnx";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."WTForms"
+      self."flask"
+    ];
+  };
+  "click" = super.buildPythonPackage rec {
+    pname = "click";
+    version = "8.1.8";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/7e/d4/7ebdbd03970677812aac39c869717059dbb71a4cfc033ca6e5221787892c/click-8.1.8-py3-none-any.whl";
+      sha256 = "1ck3f812hql67a8bfafkq30xjqmvjzsd38hjcyh7h5fhpsxk5hb3";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [];
+  };
+  "dotenv" = super.buildPythonPackage rec {
+    pname = "dotenv";
+    version = "0.9.9";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/b2/b7/545d2c10c1fc15e48653c91efde329a790f2eecfbbf2bd16003b5db2bab0/dotenv-0.9.9-py2.py3-none-any.whl";
+      sha256 = "1sacr69fzyv9khry4h0mfk98xknb25z6sss4bbdsy7dkhyh79kr9";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."python-dotenv"
+    ];
+  };
+  "flask" = super.buildPythonPackage rec {
+    pname = "flask";
+    version = "3.1.2";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/ec/f9/7f9263c5695f4bd0023734af91bedb2ff8209e8de6ead162f35d8dc762fd/flask-3.1.2-py3-none-any.whl";
+      sha256 = "0g6hczlsjjlmgbdlqhbahif1n0ah6fb5hj7a5765hqcaxh9827fa";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."blinker"
+      self."click"
+      self."importlib-metadata"
+      self."itsdangerous"
+      self."jinja2"
+      self."markupsafe"
+      self."werkzeug"
+    ];
+  };
+  "importlib-metadata" = super.buildPythonPackage rec {
+    pname = "importlib-metadata";
+    version = "8.7.1";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/fa/5e/f8e9a1d23b9c20a551a8a02ea3637b4642e22c2626e3a13a9a29cdea99eb/importlib_metadata-8.7.1-py3-none-any.whl";
+      sha256 = "0lb12x9kn1j429c9khlbibr4qqsssyav1yqy0yar8j5a3nzq07ss";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."zipp"
+    ];
+  };
+  "itsdangerous" = super.buildPythonPackage rec {
+    pname = "itsdangerous";
+    version = "2.2.0";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/04/96/92447566d16df59b2a776c0fb82dbc4d9e07cd95062562af01e408583fc4/itsdangerous-2.2.0-py3-none-any.whl";
+      sha256 = "1vq0hywr2n1z3aq1sfpisiagrd8dcsm464ql2n5qr59mkv22y966";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [];
+  };
+  "jinja2" = super.buildPythonPackage rec {
+    pname = "jinja2";
+    version = "3.1.6";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl";
+      sha256 = "0rrgdp707wfs11wk8prswvx6ma418sk16z6xql9hqba93x2y9v45";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."markupsafe"
+    ];
+  };
+  "markupsafe" = super.buildPythonPackage rec {
+    pname = "markupsafe";
+    version = "3.0.3";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/7e/99/7690b6d4034fffd95959cbe0c02de8deb3098cc577c67bb6a24fe5d7caa7/markupsafe-3.0.3.tar.gz";
+      sha256 = "160npsg7jh6mbiwy23xm9aqcxgcn0wl33hgx42rmfr2biy09a9kj";
+    };
+    format = "setuptools";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [];
+  };
+  "peewee" = super.buildPythonPackage rec {
+    pname = "peewee";
+    version = "3.19.0";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/1a/41/19c65578ef9a54b3083253c68a607f099642747168fe00f3a2bceb7c3a34/peewee-3.19.0-py3-none-any.whl";
+      sha256 = "05vlzly2y1nh8mnv77kx24raifcraaxf8370cv20hq3ffsa0n8ny";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [];
+  };
+  "python-dotenv" = super.buildPythonPackage rec {
+    pname = "python-dotenv";
+    version = "1.2.1";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/14/1b/a298b06749107c305e1fe0f814c6c74aea7b2f1e10989cb30f544a1b3253/python_dotenv-1.2.1-py3-none-any.whl";
+      sha256 = "0qax8aw8q7k73cc1wrwl90zb0clc4cxbmjy6750h194w3rbfj7mq";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [];
+  };
+  "werkzeug" = super.buildPythonPackage rec {
+    pname = "werkzeug";
+    version = "3.1.5";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/ad/e4/8d97cca767bcc1be76d16fb76951608305561c6e056811587f36cb1316a8/werkzeug-3.1.5-py3-none-any.whl";
+      sha256 = "1p12wfjd1pi2r34n5iza3xpiwp53nhwvns1jz68wwvh8j5pf64ai";
+    };
+    format = "wheel";
+    doCheck = false;
+    buildInputs = [];
+    checkInputs = [];
+    nativeBuildInputs = [];
+    propagatedBuildInputs = [
+      self."markupsafe"
+    ];
+  };
+  "zipp" = super.buildPythonPackage rec {
+    pname = "zipp";
+    version = "3.23.0";
+    src = fetchurl {
+      url = "https://files.pythonhosted.org/packages/2e/54/647ade08bf0db230bfea292f893923872fd20be6ac6f53b2b936ba839d75/zipp-3.23.0-py3-none-any.whl";
+      sha256 = "0kmishxksv9559qyklb08s46mzddq0vc6d0xrvsk5m2y27b545h7";
     };
     format = "wheel";
     doCheck = false;

@@ -16,7 +16,7 @@
     {
       devShells.x86_64-linux.default = pkgs.mkShell {
         packages = [
-          (python.withPackages (p: [ p.readkeys /* Add here more packages*/ ]))
+          (python.withPackages (p: [ p.flask p.bootstrap-flask p.dotenv p.peewee /* Add here more packages*/ ]))
         ];
       };
     };
