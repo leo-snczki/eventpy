@@ -130,6 +130,7 @@ def utilizador():
 @app.route("/apagar_conta", methods=["POST"])
 def apagar_conta():
     if g.utilizador is None:
+        flash("Precisa de iniciar sessão para apagar a conta.", "warning")
         return redirect(url_for("login"))
 
     user = g.utilizador
