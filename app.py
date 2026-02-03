@@ -175,6 +175,9 @@ def carrinho():
 def eventos():
     filtros = []
 
+    # Subquery para filtrar apenas lugares disponíveis
+    lugares_disponiveis = Lugar.select().where(Lugar.vendido == False)
+
     query = (
         Evento
         .select(
@@ -183,6 +186,7 @@ def eventos():
             fn.MAX(Lugar.preco_base).alias("preco_max"),
         )
         .join(Lugar, JOIN.LEFT_OUTER)
+        .where(Lugar.vendido == False)  # Apenas lugares disponíveis
         .group_by(Evento)
     )
 
@@ -214,6 +218,7 @@ def eventos():
         query = query.where(Evento.duracao.between(int(min_d), int(max_d)))
 
     return render_template("eventos.html", eventos=query)
+
 
 @app.route("/utilizador")
 def utilizador():
