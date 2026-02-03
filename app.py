@@ -2,7 +2,7 @@ import os
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash
 from flask_bootstrap import Bootstrap5
 from datetime import datetime
-from models import Utilizador, Evento, Lugar
+from models import Recibo, Utilizador, Evento, Lugar, Venda, Bilhete, db
 from dotenv import load_dotenv
 from peewee import *
 
@@ -119,30 +119,6 @@ def eventos():
 
     return render_template("eventos.html", eventos=query)
 
-
-@app.route("/comprar_bilhetes/<int:id>")
-def comprar_bilhetes(id):
-    evento = Evento.get_or_none(Evento.id == id)
-    if not evento:
-        flash("O evento não existe ou foi removido.", "warning")
-        return redirect(url_for("eventos"))
-
-    lugares = (
-        Lugar
-        .select()
-        .where(
-            (Lugar.evento == evento) &
-            (Lugar.vendido == False)
-        )
-        .order_by(Lugar.tipo, Lugar.preco_base)
-    )
-
-    return render_template(
-        "comprar_bilhetes.html",
-        evento=evento,
-        lugares=lugares
-    )
-
 @app.route("/utilizador")
 def utilizador():
     if g.utilizador is None:
@@ -167,9 +143,12 @@ def sobre():
 
 @app.route("/escolher_lugar/<int:evento_id>", methods=["GET", "POST"])
 def escolher_lugar(evento_id):
+    if g.utilizador is None:
+        flash("Precisa de iniciar sessão para comprar bilhetes.", "warning")
+        return redirect(url_for("login"))
     evento = Evento.get_or_none(Evento.id == evento_id)
     if evento.tipo == Evento.TIPO_CONCERTO:
-        return redirect(url_for("comprar_bilhetes", id=evento.id))
+        return redirect(url_for("login", evento_id=evento.id))
     if not evento:
         flash("O evento não existe.", "warning")
         return redirect(url_for("eventos"))
