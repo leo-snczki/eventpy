@@ -46,7 +46,7 @@ def login():
                 session["user_id"] = user.id
                 return redirect(url_for("utilizador"))
         except Utilizador.DoesNotExist:
-            pass
+            flash("Credenciais inválidas.", "warning")
     return render_template("login.html")
 
 
@@ -66,6 +66,7 @@ def registro():
         )
         user.set_senha(senha)
         user.save()
+        flash("Registro bem-sucedido! Por favor, faça login.", "success")
         return redirect(url_for("login"))
     return render_template("registro.html")
 
@@ -134,7 +135,8 @@ def apagar_conta():
     user = g.utilizador
     session.pop("user_id", None)
     user.delete_instance()
-    return redirect(url_for("registro"))
+    flash("Conta apagada com sucesso.", "success")
+    return redirect(url_for("login"))
 
 
 @app.route("/sobre")
