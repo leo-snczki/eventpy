@@ -37,6 +37,66 @@ def carregar_utilizador():
 def inject_current_year():
     return {"current_year": datetime.now().year}
 
+@app.route("/checkout_comprar_agora/<int:evento_id>", methods=["GET", "POST"])
+def checkout_comprar_agora(evento_id):
+    if g.utilizador is None:
+        flash("Precisa de iniciar sessão para comprar.", "warning")
+        return redirect(url_for("login"))
+
+    evento = Evento.get_or_none(Evento.id == evento_id)
+    if not evento:
+        flash("Evento não encontrado.", "danger")
+        return redirect(url_for("eventos"))
+
+    lugar_sugerido = None
+    lugares_numerados = []
+
+    if evento.tipo == Evento.TIPO_CONCERTO:
+        # Pega o lugar de pista DISPONÍVEL com o MENOR PREÇO
+        lugar_sugerido = (Lugar.select()
+                          .where((Lugar.evento == evento) & 
+                                 (Lugar.tipo == Lugar.TIPO_PISTA) & 
+                                 (Lugar.vendido == False))
+                          .order_by(Lugar.preco_base.asc()) # Menor preço primeiro
+                          .first())
+    else:
+        lugares_numerados = (Lugar.select()
+                             .where((Lugar.evento == evento) & 
+                                    (Lugar.vendido == False))
+                             .order_by(Lugar.fila, Lugar.numero))
+
+    if request.method == "POST":
+        lugar_id = request.form.get("lugar_id")
+        nif = request.form.get("nif")
+
+        if not lugar_id:
+            flash("Desculpe, já não existem lugares disponíveis.", "danger")
+            return redirect(url_for("eventos"))
+
+        try:
+            with db.atomic():
+                lugar = Lugar.get_by_id(lugar_id)
+                if lugar.vendido:
+                    flash("Este lugar foi reservado por outra pessoa. Tente novamente.", "warning")
+                    return redirect(url_for("checkout_comprar_agora", evento_id=evento.id))
+
+                venda = Venda.create(utilizador=g.utilizador, evento=evento, total=lugar.preco_base)
+                Bilhete.create(venda=venda, lugar=lugar, preco=lugar.preco_base)
+                
+                lugar.vendido = True
+                lugar.save()
+
+                Recibo.create(venda=venda, nif=nif, valor_total=lugar.preco_base)
+
+            flash(f"Compra de '{evento.titulo}' concluída com sucesso!", "success")
+            return redirect(url_for("utilizador"))
+        except Exception:
+            flash("Erro ao processar a transação. Tente mais tarde.", "danger")
+
+    return render_template("checkout_comprar_agora.html", 
+                           evento=evento, 
+                           lugar_sugerido=lugar_sugerido, 
+                           lugares_numerados=lugares_numerados)
 
 @app.route("/")
 def index():

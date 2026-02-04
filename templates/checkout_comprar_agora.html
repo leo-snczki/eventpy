@@ -1,67 +1,76 @@
 {% extends "base.html" %}
 
-{% block title %}Comprar Agora | Eventpy{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
-
-    <h1 class="fw-bold mb-4">Comprar Agora – {{ evento.titulo }}</h1>
     {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
     {% endwith %}
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Informações do Evento</h5>
-            <ul class="list-unstyled mb-0">
-                <li><strong>Local:</strong> {{ evento.local }}</li>
-                <li><strong>Data:</strong> {{ evento.data_hora }}</li>
-                <li><strong>Tipo:</strong> {{ evento.tipo }}</li>
-                <li><strong>Duração:</strong> {{ evento.duracao }} min</li>
-            </ul>
-        </div>
-    </div>
 
-    <form method="post" action="{{ url_for('finalizar_compra_agora', evento_id=evento.id) }}">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Selecionar Bilhetes</h5>
-
-                {% if evento.tipo == "Concerto" %}
-                <p>Os bilhetes são para a pista, sem lugares marcados.</p>
-                <div class="mb-3">
-                    <label class="form-label">Quantidade de bilhetes (máx. 2 por conta/NIF)</label>
-                    <input type="number" class="form-control" name="quantidade" min="1" max="2" value="1" required>
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white text-center py-3">
+                    <h4 class="mb-0">Resumo do Pagamento</h4>
                 </div>
-                <p class="text-muted">Lugares disponíveis: {{ lugares|length }}</p>
-                {% else %}
-                <div class="d-flex flex-wrap gap-3">
-                    {% for lugar in lugares %}
-                    {% if not lugar.vendido %}
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="lugares_selecionados"
-                            value="{{ lugar.id }}" id="lugar{{ lugar.id }}">
-                        <label class="form-check-label" for="lugar{{ lugar.id }}">
-                            {{ lugar.numero if lugar.numero else "Pista" }} {{ lugar.fila if lugar.fila else "" }} - {{
-                            lugar.preco_base }} €
-                        </label>
+                <div class="card-body p-4">
+                    <div class="mb-4 text-center">
+                        <h2 class="h4 fw-bold">{{ evento.titulo }}</h2>
+                        <p class="text-muted small"><i class="bi bi-geo-alt"></i> {{ evento.local }}</p>
                     </div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-                <p class="text-muted mt-2">Lugares a cinzento já se encontram vendidos.</p>
-                {% endif %}
 
-                <button type="submit" class="btn btn-success mt-3">Finalizar Compra</button>
+                    <form method="POST">
+                        {% if evento.tipo == 'concerto' %}
+                            <div class="bg-light p-3 rounded text-center mb-4 border">
+                                <span class="text-muted d-block small mb-1">MELHOR PREÇO DISPONÍVEL (PISTA)</span>
+                                <h2 class="text-success fw-bold mb-0">
+                                    {% if lugar_sugerido %}
+                                        {{ "{:,.2f}".format(lugar_sugerido.preco_base) }}€
+                                        <input type="hidden" name="lugar_id" value="{{ lugar_sugerido.id }}">
+                                    {% else %}
+                                        Esgotado
+                                    {% endif %}
+                                </h2>
+                            </div>
+                        {% else %}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small">ESCOLHA O SEU ASSENTO:</label>
+                                <select name="lugar_id" class="form-select" required>
+                                    <option value="" disabled selected>Fila e Número...</option>
+                                    {% for lugar in lugares_numerados %}
+                                        <option value="{{ lugar.id }}">
+                                            Fila {{ lugar.fila }}, Lugar {{ lugar.numero }} — {{ "{:,.2f}".format(lugar.preco_base) }}€
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <label for="nif" class="form-label fw-bold small">NIF PARA FATURAÇÃO:</label>
+                            <input type="text" name="nif" id="nif" class="form-control" placeholder="9 dígitos" required pattern="\d{9}">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {% if (evento.tipo == 'concerto' and not lugar_sugerido) or (evento.tipo != 'concerto' and not lugares_numerados) %}
+                                <button type="button" class="btn btn-secondary btn-lg" disabled>Indisponível</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                    <i class="bi bi-credit-card"></i> PAGAR AGORA
+                                </button>
+                            {% endif %}
+                            <a href="{{ url_for('eventos') }}" class="btn btn-link btn-sm text-decoration-none text-muted">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </form>
-
+    </div>
 </div>
 {% endblock %}
