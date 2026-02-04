@@ -1,4 +1,5 @@
 # https://www.youtube.com/watch?v=6fftiTJ2vuQ
+# nix-shell -p ninja pkg-config cairo libxcrypt --run "nix run github:nix-community/pip2nix -- generate flask bootstrap-flask flask-mail peewee dotenv xhtml2pdf qrcode"
 {
   description = "python-nix";
 
@@ -16,7 +17,7 @@
     {
       devShells.x86_64-linux.default = pkgs.mkShell {
         packages = [
-          (python.withPackages (p: [ p.flask p.bootstrap-flask p.dotenv p.peewee p.flask-mail /* Add here more packages*/ ]))
+          (python.withPackages (p: [ p.flask p.bootstrap-flask p.dotenv p.peewee p.flask-mail p.xhtml2pdf p.qrcode /* Add here more packages*/ ]))
         ];
       };
     };

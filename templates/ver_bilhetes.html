@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Bilhetes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Bilhetes: {{ venda.evento.titulo }}</h2>
+        <a href="{{ url_for('utilizador') }}" class="btn btn-outline-secondary">Voltar</a>
+    </div>
+
+    <div class="row">
+        {% for b in bilhetes %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-start border-5 border-primary">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <h5 class="card-title">{{ venda.evento.titulo }}</h5>
+                            <p class="mb-1 text-muted"><i class="bi bi-geo-alt"></i> {{ venda.evento.local }}</p>
+                            <p class="mb-1"><i class="bi bi-calendar"></i> {{ venda.evento.data_hora.strftime('%d/%m/%Y às %H:%M') }}</p>
+                            <hr>
+                            <p class="h5 text-primary">{{ b.lugar }}</p>
+                            <small class="text-muted">Titular: {{ venda.utilizador.nome }}</small>
+                        </div>
+                        <div class="col-4 text-center d-flex flex-column justify-content-center align-items-center">
+                            <img src="data:image/png;base64,{{ b.qr_code }}" alt="QR Code" class="img-fluid mb-2" style="max-width: 120px;">
+                            <small class="text-muted" style="font-size: 0.7rem;">#{{ b.id }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

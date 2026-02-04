@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Fatura Recibo</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #333; }
+        .header { margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .company-info { float: left; width: 50%; }
+        .invoice-info { float: right; width: 40%; text-align: right; }
+        .client-info { clear: both; margin-top: 20px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: #f2f2f2; border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
+        td { border-bottom: 1px solid #ddd; padding: 8px; }
+        .total-section { float: right; margin-top: 20px; width: 250px; }
+        .total-row { font-weight: bold; font-size: 14px; }
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #777; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="company-info">
+            <h1>EVENTPY</h1>
+            <p>Rua da Tecnologia, 6967<br>1000-001 Lisboa<br>NIF: 135792416</p>
+        </div>
+        <div class="invoice-info">
+            <h2>FATURA-RECIBO</h2>
+            <p><strong>Nº:</strong> FR {{ hoje.year }}/{{ venda.id }}</p>
+            <p><strong>Data:</strong> {{ hoje.strftime('%d/%m/%Y') }}</p>
+        </div>
+    </div>
+
+    <div class="client-info">
+        <p><strong>Nome:</strong> {{ venda.utilizador.nome }}</p>
+        <p><strong>Email:</strong> {{ venda.utilizador.email }}</p>
+        <p><strong>NIF:</strong> {{ recibo.nif if recibo and recibo.nif else '999999990' }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th style="text-align: center;">Qtd</th>
+                <th style="text-align: right;">Preço Unit.</th>
+                <th style="text-align: right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bilhete in venda.bilhetes %}
+            <tr>
+                <td>
+                    Bilhete - {{ venda.evento.titulo }}<br>
+                    <small>{{ bilhete.lugar.tipo if bilhete.lugar else 'Geral' }}</small>
+                </td>
+                <td style="text-align: center;">1</td>
+                <td style="text-align: right;">{{ "%.2f"|format(bilhete.preco|float) }} €</td>
+                <td style="text-align: right;">{{ "%.2f"|format(bilhete.preco|float) }} €</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <table style="border: none;">
+            <tr>
+                <td style="border: none; text-align: right;">Total Líquido:</td>
+                <td style="border: none; text-align: right;">{{ "%.2f"|format(valor_base) }} €</td>
+            </tr>
+            <tr>
+                <td style="border: none; text-align: right;">IVA (23%):</td>
+                <td style="border: none; text-align: right;">{{ "%.2f"|format(valor_iva) }} €</td>
+            </tr>
+            <tr class="total-row">
+                <td style="border: none; text-align: right; border-top: 2px solid #000;">TOTAL A PAGAR:</td>
+                <td style="border: none; text-align: right; border-top: 2px solid #000;">{{ "%.2f"|format(venda.total|float) }} €</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        Processado por computador. Este documento serve de comprovativo de pagamento.
+    </div>
+
+</body>
+</html>

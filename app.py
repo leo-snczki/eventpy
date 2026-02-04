@@ -1,5 +1,9 @@
 import os
-from flask import Flask, g, render_template, request, redirect, url_for, session, flash
+import io
+import base64
+import qrcode
+from xhtml2pdf import pisa
+from flask import Flask, g, render_template, request, redirect, url_for, session, flash, make_response
 from flask_bootstrap import Bootstrap5
 from flask_mail import Mail, Message
 from datetime import datetime
@@ -225,6 +229,7 @@ def utilizador():
         nif = recibo.nif if recibo else "-"
 
         encomendas.append({
+            "venda_id": venda.id,
             "evento_titulo": evento_titulo,
             "data_encomenda": data_encomenda,
             "quantidade": quantidade,
@@ -366,6 +371,78 @@ Mensagem:
 
     return render_template("suporte.html")
 
+@app.route("/compras/bilhetes/<int:venda_id>")
+def ver_bilhetes(venda_id):
+    if g.utilizador is None:
+        return redirect(url_for("login"))
+
+    venda = Venda.get_or_none((Venda.id == venda_id) & (Venda.utilizador == g.utilizador))
+    if not venda:
+        flash("Venda não encontrada.", "danger")
+        return redirect(url_for("utilizador"))
+
+    bilhetes_info = []
+    for b in venda.bilhetes:
+        # Dados para o QR Code ID do bilhete com hash fictício
+        # Na vida real, usaria um token único seguro.
+        dados_qr = f"BILHETE-{b.id}-EVENTO-{venda.evento.id}"
+        
+        qr = qrcode.make(dados_qr)
+        buf = io.BytesIO()
+        qr.save(buf, format='PNG')
+        img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+        
+        lugar_desc = "Pista"
+        if b.lugar and b.lugar.tipo != Lugar.TIPO_PISTA:
+            lugar_desc = f"{b.lugar.tipo.capitalize()} - Fila {b.lugar.fila}, Lugar {b.lugar.numero}"
+
+        bilhetes_info.append({
+            "id": b.id,
+            "lugar": lugar_desc,
+            "preco": b.preco,
+            "qr_code": img_b64
+        })
+
+    return render_template("ver_bilhetes.html", venda=venda, bilhetes=bilhetes_info)
+
+@app.route("/compras/fatura/<int:venda_id>")
+def download_fatura(venda_id):
+    if g.utilizador is None:
+        return redirect(url_for("login"))
+
+    venda = Venda.get_or_none((Venda.id == venda_id) & (Venda.utilizador == g.utilizador))
+    if not venda:
+        return redirect(url_for("utilizador"))
+    
+    recibo = Recibo.get_or_none(Recibo.venda == venda)
+
+    total_pago = float(venda.total)
+    v_base = total_pago / 1.23
+    v_iva = total_pago - v_base
+
+    html = render_template(
+        "fatura_pdf.html", 
+        venda=venda, 
+        recibo=recibo, 
+        hoje=datetime.now(),
+        valor_base=v_base,
+        valor_iva=v_iva
+    )
+    
+    pdf_output = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.BytesIO(html.encode("utf-8")), dest=pdf_output)
+
+    if pisa_status.err:
+        flash("Erro ao gerar PDF.", "danger")
+        return redirect(url_for("utilizador"))
+
+    pdf_output.seek(0)
+    response = make_response(pdf_output.read())
+    response.headers['Content-Type'] = 'application/pdf'
+    filename = f"Fatura_{venda.id}.pdf"
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True)
