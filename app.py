@@ -31,6 +31,11 @@ def carregar_utilizador():
     if user_id:
         try:
             g.utilizador = Utilizador.get(Utilizador.id == user_id)
+
+            if "carrinho" not in session:
+                session["carrinho"] = []
+            g.carrinho_count = len(session.get("carrinho", [])) # se n tiver, da erro ao renderizar no index se n tiver logado.
+
         except Utilizador.DoesNotExist:
             g.utilizador = None
     else:
@@ -129,7 +134,7 @@ def login():
 @app.route("/deslogar")
 def deslogar():
     if g.utilizador is not None:
-        session.pop("user_id", None)
+        session.clear()
     return redirect(url_for("index"))
 
 @app.route("/registro", methods=["GET", "POST"])
@@ -153,9 +158,6 @@ def registro():
     return render_template("registro.html")
 
 
-@app.route("/carrinho")
-def carrinho():
-    return render_template("carrinho.html")
 
 
 @app.route("/eventos")
@@ -282,56 +284,89 @@ def sobre():
 @app.route("/escolher_lugar/<int:evento_id>", methods=["GET", "POST"])
 def escolher_lugar(evento_id):
     if g.utilizador is None:
-        flash("Precisa de iniciar sessão para comprar bilhetes.", "warning")
+        flash("Inicie sessão para escolher o seu lugar.", "warning")
         return redirect(url_for("login"))
+
     evento = Evento.get_or_none(Evento.id == evento_id)
-    if evento.tipo == Evento.TIPO_CONCERTO:
-        return redirect(url_for("login", evento_id=evento.id))
     if not evento:
-        flash("O evento não existe.", "warning")
         return redirect(url_for("eventos"))
 
-    # Captura a fila selecionada via GET
-    fila_selecionada = request.args.get("fila")
-
-    # Pega todas as filas disponíveis do evento (não vendidas)
-    filas_query = (
-        Lugar
-        .select(Lugar.fila)
-        .where((Lugar.evento == evento) & (Lugar.vendido == False) & (Lugar.fila.is_null(False)))
-        .distinct()
-        .order_by(Lugar.fila)
-    )
-    filas = [f.fila for f in filas_query]
-
-    lugares = []
-    if fila_selecionada:
-        lugares = (
-            Lugar
-            .select()
-            .where((Lugar.evento == evento) & (Lugar.fila == fila_selecionada))
-            .order_by(Lugar.numero)
-        )
-
-    # Processa o POST de confirmação de lugares
     if request.method == "POST":
         selecionados = request.form.getlist("lugares_selecionados")
         if not selecionados:
             flash("Selecione pelo menos um lugar.", "warning")
         else:
-            flash(f"{len(selecionados)} lugar/es confirmado/s com sucesso!", "success")
-            # Redireciona para evitar reenvio de formulário
-            return redirect(url_for("escolher_lugar", evento_id=evento.id, fila=fila_selecionada))
+            carrinho = session.get("carrinho", [])
+            for sid in selecionados:
+                sid_int = int(sid)
+                if sid_int not in carrinho:
+                    carrinho.append(sid_int)
+            session["carrinho"] = carrinho
+            session.modified = True
+            flash("Adicionado com sucesso!", "success")
+            return redirect(url_for("carrinho"))
 
-    return render_template(
-        "escolher_lugar.html",
-        evento=evento,
-        filas=filas,
-        fila_selecionada=fila_selecionada,
-        lugares=lugares
-    )
+    # Lógica de carregar filas e lugares (GET)
+    fila_selecionada = request.args.get("fila")
+    filas_query = (Lugar.select(Lugar.fila)
+                   .where((Lugar.evento == evento) & (Lugar.vendido == False) & (Lugar.fila.is_null(False)))
+                   .distinct().order_by(Lugar.fila))
+    filas = [f.fila for f in filas_query]
+    
+    lugares = []
+    if fila_selecionada:
+        lugares = Lugar.select().where((Lugar.evento == evento) & (Lugar.fila == fila_selecionada))
 
-from flask_mail import Message
+    return render_template("escolher_lugar.html", evento=evento, filas=filas, 
+                           fila_selecionada=fila_selecionada, lugares=lugares)
+
+@app.route("/adicionar_carrinho/<int:evento_id>")
+def adicionar_carrinho(evento_id):
+    if g.utilizador is None:
+        flash("Precisa de iniciar sessão para comprar.", "warning")
+        return redirect(url_for("login"))
+
+    evento = Evento.get_or_none(Evento.id == evento_id)
+    if not evento:
+        flash("Evento não encontrado.", "danger")
+        return redirect(url_for("eventos"))
+
+    # Concerto adiciona o lugar de pista mais barato direto
+    if evento.tipo == Evento.TIPO_CONCERTO:
+        lugar = (Lugar.select()
+                 .where((Lugar.evento == evento) & (Lugar.tipo == Lugar.TIPO_PISTA) & (Lugar.vendido == False))
+                 .order_by(Lugar.preco_base.asc()).first())
+        
+        if not lugar:
+            flash("Desculpe, este concerto está esgotado.", "warning")
+            return redirect(url_for("eventos"))
+
+        carrinho = session.get("carrinho", [])
+        if lugar.id not in carrinho:
+            carrinho.append(lugar.id)
+            session["carrinho"] = carrinho
+            session.modified = True
+            flash(f"Bilhete para {evento.titulo} adicionado ao carrinho!", "success")
+        else:
+            flash("Este bilhete já está no seu carrinho.", "info")
+
+        session["carrinho"] = carrinho
+        session.modified = True
+        return redirect(url_for("carrinho"))
+
+    # Outros tipos (Teatro/Palestra) mandam escolher lugar
+    return redirect(url_for("escolher_lugar", evento_id=evento.id))
+
+@app.route("/remover_carrinho/<int:lugar_id>")
+def remover_carrinho(lugar_id):
+    carrinho = session.get("carrinho", [])
+    if lugar_id in carrinho:
+        carrinho.remove(lugar_id)
+        session["carrinho"] = carrinho
+        session.modified = True
+    return redirect(url_for("carrinho"))
+
+
 
 @app.route("/suporte", methods=["GET", "POST"])
 def suporte():
@@ -442,6 +477,71 @@ def download_fatura(venda_id):
     response.headers['Content-Disposition'] = f'attachment; filename={filename}'
     
     return response
+
+@app.route("/carrinho")
+def carrinho():
+    ids = session.get("carrinho", [])
+    # Carregamos os detalhes dos lugares e eventos do banco de dados
+    itens = Lugar.select(Lugar, Evento).join(Evento).where(Lugar.id << ids) if ids else []
+    total = sum(item.preco_base for item in itens)
+    return render_template("carrinho.html", itens=itens, total=total)
+
+@app.route("/carrinho/finalizar", methods=["POST"])
+def finalizar_carrinho():
+    if g.utilizador is None:
+        flash("Precisa de iniciar sessão para finalizar a compra.", "warning")
+        return redirect(url_for("login"))
+
+    ids_carrinho = session.get("carrinho", [])
+    if not ids_carrinho:
+        flash("O seu carrinho está vazio.", "warning")
+        return redirect(url_for("eventos"))
+
+    nif = request.form.get("nif")
+    if not nif or len(nif) != 9:
+        flash("Por favor, insira um NIF válido com 9 dígitos.", "danger")
+        return redirect(url_for("carrinho"))
+
+    try:
+        with db.atomic():
+            # 1. Buscar os lugares e verificar se ainda estão disponíveis
+            lugares = Lugar.select().where(Lugar.id << ids_carrinho)
+            
+            for l in lugares:
+                if l.vendido:
+                    flash(f"O lugar {l.numero if l.numero else ''} do evento {l.evento.titulo} já foi vendido.", "danger")
+                    return redirect(url_for("carrinho"))
+
+            # 2. Calcular o total da venda
+            total_venda = sum(l.preco_base for l in lugares)
+
+            # 3. Criar a Venda (usamos o primeiro evento como referência ou o sistema pode ser multi-evento)
+            # Nota: Na tua estrutura a Venda aponta para um Evento. Se o carrinho tiver eventos diferentes,
+            # podes associar ao evento do primeiro item ou ajustar o modelo no futuro.
+            venda = Venda.create(
+                utilizador=g.utilizador, 
+                evento=lugares[0].evento, 
+                total=total_venda
+            )
+
+            # 4. Criar Bilhetes e marcar Lugares como vendidos
+            for l in lugares:
+                Bilhete.create(venda=venda, lugar=l, preco=l.preco_base)
+                l.vendido = True
+                l.save()
+
+            # 5. Gerar Recibo único
+            Recibo.create(venda=venda, nif=nif, valor_total=total_venda)
+
+        # Limpar carrinho após sucesso
+        session["carrinho"] = []
+        flash("Compra finalizada com sucesso! Pode consultar os seus bilhetes no perfil.", "success")
+        return redirect(url_for("utilizador"))
+
+    except Exception as e:
+        print(f"Erro no checkout: {e}")
+        flash("Ocorreu um erro ao processar o seu pedido.", "danger")
+        return redirect(url_for("carrinho"))
 
 if __name__ == "__main__":
     app.run(debug=True)

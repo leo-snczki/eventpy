@@ -73,6 +73,18 @@
                         <a class="nav-link" href="{{ url_for('deslogar') }}"><i class="fa-solid fa-power-off"></i>
                             Deslogar</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{{ url_for('carrinho') }}">
+                            <i class="fa-solid fa-shopping-cart"></i> Carrinho
+                            {% if g.carrinho_count > 0 %}
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ g.carrinho_count }}
+                                <span class="visually-hidden">itens no carrinho</span>
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i>
@@ -86,10 +98,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('eventos') }}"><i class="fa-solid fa-calendar-days"></i>
                             Eventos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('carrinho') }}"><i class="fa-solid fa-shopping-cart"></i>
-                            Carrinho</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Página
