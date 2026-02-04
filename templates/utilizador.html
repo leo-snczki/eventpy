@@ -66,6 +66,7 @@
                                     <th>Valor</th>
                                     <th>NIF</th>
                                     <th>Estado</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -78,6 +79,16 @@
                                     <td>{{ e.nif }}</td>
                                     <td>
                                         <span class="badge bg-success">{{ e.estado }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('ver_bilhetes', venda_id=e.venda_id) }}"
+                                            class="btn btn-sm btn-info text-white" title="Ver QR Codes">
+                                            <i class="bi bi-qr-code"></i> Bilhetes
+                                        </a>
+                                        <a href="{{ url_for('download_fatura', venda_id=e.venda_id) }}"
+                                            class="btn btn-sm btn-secondary" title="Baixar Fatura">
+                                            <i class="bi bi-file-earmark-pdf"></i> Fatura
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
