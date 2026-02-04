@@ -49,54 +49,58 @@ def checkout_comprar_agora(evento_id):
         return redirect(url_for("eventos"))
 
     lugar_sugerido = None
-    lugares_numerados = []
+    filas = []
+    lugares_da_fila = []
+    fila_selecionada = request.args.get("fila")
 
     if evento.tipo == Evento.TIPO_CONCERTO:
-        # Pega o lugar de pista DISPONÍVEL com o MENOR PREÇO
+        # Pega o lugar de pista mais barato
         lugar_sugerido = (Lugar.select()
-                          .where((Lugar.evento == evento) & 
-                                 (Lugar.tipo == Lugar.TIPO_PISTA) & 
-                                 (Lugar.vendido == False))
-                          .order_by(Lugar.preco_base.asc()) # Menor preço primeiro
-                          .first())
+                          .where((Lugar.evento == evento) & (Lugar.tipo == Lugar.TIPO_PISTA) & (Lugar.vendido == False))
+                          .order_by(Lugar.preco_base.asc()).first())
     else:
-        lugares_numerados = (Lugar.select()
-                             .where((Lugar.evento == evento) & 
-                                    (Lugar.vendido == False))
-                             .order_by(Lugar.fila, Lugar.numero))
+        # Lógica de Teatro/Palestra: Carregar Filas
+        filas_query = (Lugar.select(Lugar.fila)
+                       .where((Lugar.evento == evento) & (Lugar.fila.is_null(False)))
+                       .distinct().order_by(Lugar.fila))
+        filas = [f.fila for f in filas_query]
+
+        if fila_selecionada:
+            lugares_da_fila = (Lugar.select()
+                               .where((Lugar.evento == evento) & (Lugar.fila == fila_selecionada))
+                               .order_by(Lugar.numero))
 
     if request.method == "POST":
         lugar_id = request.form.get("lugar_id")
         nif = request.form.get("nif")
 
         if not lugar_id:
-            flash("Desculpe, já não existem lugares disponíveis.", "danger")
-            return redirect(url_for("eventos"))
+            flash("Selecione um lugar antes de confirmar.", "warning")
+        else:
+            try:
+                with db.atomic():
+                    lugar = Lugar.get_by_id(lugar_id)
+                    if lugar.vendido:
+                        flash("Este lugar já não está disponível.", "danger")
+                        return redirect(url_for("checkout_comprar_agora", evento_id=evento.id))
 
-        try:
-            with db.atomic():
-                lugar = Lugar.get_by_id(lugar_id)
-                if lugar.vendido:
-                    flash("Este lugar foi reservado por outra pessoa. Tente novamente.", "warning")
-                    return redirect(url_for("checkout_comprar_agora", evento_id=evento.id))
+                    venda = Venda.create(utilizador=g.utilizador, evento=evento, total=lugar.preco_base)
+                    Bilhete.create(venda=venda, lugar=lugar, preco=lugar.preco_base)
+                    lugar.vendido = True
+                    lugar.save()
+                    Recibo.create(venda=venda, nif=nif, valor_total=lugar.preco_base)
 
-                venda = Venda.create(utilizador=g.utilizador, evento=evento, total=lugar.preco_base)
-                Bilhete.create(venda=venda, lugar=lugar, preco=lugar.preco_base)
-                
-                lugar.vendido = True
-                lugar.save()
-
-                Recibo.create(venda=venda, nif=nif, valor_total=lugar.preco_base)
-
-            flash(f"Compra de '{evento.titulo}' concluída com sucesso!", "success")
-            return redirect(url_for("utilizador"))
-        except Exception:
-            flash("Erro ao processar a transação. Tente mais tarde.", "danger")
+                flash("Compra realizada com sucesso!", "success")
+                return redirect(url_for("utilizador"))
+            except Exception:
+                flash("Erro ao processar a compra.", "danger")
 
     return render_template("checkout_comprar_agora.html", 
                            evento=evento, 
                            lugar_sugerido=lugar_sugerido, 
-                           lugares_numerados=lugares_numerados)
+                           filas=filas, 
+                           lugares=lugares_da_fila, 
+                           fila_selecionada=fila_selecionada)
 
 @app.route("/")
 def index():

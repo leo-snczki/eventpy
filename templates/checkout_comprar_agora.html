@@ -3,69 +3,81 @@
 {% block content %}
 <div class="container mt-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
+      {% if messages %}{% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+      {% endfor %}{% endif %}
     {% endwith %}
 
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
+        <div class="col-md-8">
             <div class="card shadow border-0">
                 <div class="card-header bg-dark text-white text-center py-3">
-                    <h4 class="mb-0">Resumo do Pagamento</h4>
+                    <h4 class="mb-0">Resumo e Seleção de Lugar</h4>
                 </div>
                 <div class="card-body p-4">
-                    <div class="mb-4 text-center">
-                        <h2 class="h4 fw-bold">{{ evento.titulo }}</h2>
-                        <p class="text-muted small"><i class="bi bi-geo-alt"></i> {{ evento.local }}</p>
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">{{ evento.titulo }}</h2>
+                        <p class="text-muted"><i class="bi bi-geo-alt"></i> {{ evento.local }}</p>
                     </div>
 
                     <form method="POST">
                         {% if evento.tipo == 'concerto' %}
-                            <div class="bg-light p-3 rounded text-center mb-4 border">
-                                <span class="text-muted d-block small mb-1">MELHOR PREÇO DISPONÍVEL (PISTA)</span>
-                                <h2 class="text-success fw-bold mb-0">
-                                    {% if lugar_sugerido %}
-                                        {{ "{:,.2f}".format(lugar_sugerido.preco_base) }}€
-                                        <input type="hidden" name="lugar_id" value="{{ lugar_sugerido.id }}">
-                                    {% else %}
-                                        Esgotado
-                                    {% endif %}
-                                </h2>
+                            <div class="alert alert-secondary text-center mb-4">
+                                <span class="d-block small text-uppercase">Preço (Pista)</span>
+                                <h2 class="text-success fw-bold">{{ "{:,.2f}".format(lugar_sugerido.preco_base) if lugar_sugerido else "Esgotado" }}€</h2>
+                                {% if lugar_sugerido %}<input type="hidden" name="lugar_id" value="{{ lugar_sugerido.id }}">{% endif %}
                             </div>
                         {% else %}
                             <div class="mb-4">
-                                <label class="form-label fw-bold small">ESCOLHA O SEU ASSENTO:</label>
-                                <select name="lugar_id" class="form-select" required>
-                                    <option value="" disabled selected>Fila e Número...</option>
-                                    {% for lugar in lugares_numerados %}
-                                        <option value="{{ lugar.id }}">
-                                            Fila {{ lugar.fila }}, Lugar {{ lugar.numero }} — {{ "{:,.2f}".format(lugar.preco_base) }}€
-                                        </option>
+                                <label class="form-label fw-bold">1. Escolha a Fila:</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for fila in filas %}
+                                    <a href="{{ url_for('checkout_comprar_agora', evento_id=evento.id, fila=fila) }}" 
+                                       class="btn {{ 'btn-primary' if fila == fila_selecionada else 'btn-outline-primary' }} btn-sm">
+                                        Fila {{ fila }}
+                                    </a>
                                     {% endfor %}
-                                </select>
+                                </div>
                             </div>
+
+                            {% if fila_selecionada %}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">2. Escolha o Assento na Fila {{ fila_selecionada }}:</label>
+                                <div class="d-flex flex-wrap gap-2 justify-content-center p-3 bg-light rounded border">
+                                    {% for lugar in lugares %}
+                                        {% if not lugar.vendido %}
+                                            <input type="radio" class="btn-check" name="lugar_id" value="{{ lugar.id }}" id="lugar{{ lugar.id }}" required>
+                                            <label class="btn btn-outline-success btn-sm" for="lugar{{ lugar.id }}" style="width: 45px;">
+                                                {{ lugar.numero }}
+                                            </label>
+                                        {% else %}
+                                            <button type="button" class="btn btn-secondary btn-sm" disabled style="width: 45px;">{{ lugar.numero }}</button>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="form-text text-center mt-2">Os lugares a cinzento já estão ocupados.</div>
+                            </div>
+                            {% endif %}
                         {% endif %}
 
+                        <hr>
+                        
                         <div class="mb-4">
-                            <label for="nif" class="form-label fw-bold small">NIF PARA FATURAÇÃO:</label>
+                            <label for="nif" class="form-label fw-bold">3. Dados de Faturação (NIF):</label>
                             <input type="text" name="nif" id="nif" class="form-control" placeholder="9 dígitos" required pattern="\d{9}">
                         </div>
 
                         <div class="d-grid gap-2">
-                            {% if (evento.tipo == 'concerto' and not lugar_sugerido) or (evento.tipo != 'concerto' and not lugares_numerados) %}
-                                <button type="button" class="btn btn-secondary btn-lg" disabled>Indisponível</button>
+                            {% if (evento.tipo == 'concerto' and not lugar_sugerido) or (evento.tipo != 'concerto' and not fila_selecionada) %}
+                                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                    {{ 'Selecione uma fila primeiro' if evento.tipo != 'concerto' else 'Esgotado' }}
+                                </button>
                             {% else %}
-                                <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                                    <i class="bi bi-credit-card"></i> PAGAR AGORA
+                                <button type="submit" class="btn btn-success btn-lg fw-bold">
+                                    <i class="bi bi-cart-check"></i> CONFIRMAR E PAGAR
                                 </button>
                             {% endif %}
-                            <a href="{{ url_for('eventos') }}" class="btn btn-link btn-sm text-decoration-none text-muted">Cancelar</a>
+                            <a href="{{ url_for('eventos') }}" class="btn btn-link text-muted">Cancelar</a>
                         </div>
                     </form>
                 </div>
