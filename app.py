@@ -221,10 +221,9 @@ def utilizador():
         quantidade = bilhetes.count()
         valor_total = float(venda.total)
         data_encomenda = venda.data_venda.strftime("%d/%m/%Y")
-        estado = "Confirmado"  # podes adicionar lógica de estado
+        estado = "Confirmado"
         evento_titulo = venda.evento.titulo
 
-        # Buscar recibo ligado à venda
         recibo = Recibo.get_or_none(Recibo.venda == venda)
         nif = recibo.nif if recibo else "-"
 
