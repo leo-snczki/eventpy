@@ -223,7 +223,6 @@ def utilizador():
         # Buscar recibo ligado à venda
         recibo = Recibo.get_or_none(Recibo.venda == venda)
         nif = recibo.nif if recibo else "-"
-        valor_recibo = float(recibo.valor_total) if recibo else "-"
 
         encomendas.append({
             "evento_titulo": evento_titulo,
@@ -232,7 +231,6 @@ def utilizador():
             "valor_total": valor_total,
             "estado": estado,
             "nif": nif,
-            "valor_recibo": valor_recibo
         })
 
     return render_template("utilizador.html", utilizador=g.utilizador, encomendas=encomendas)
