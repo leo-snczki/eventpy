@@ -481,7 +481,6 @@ def download_fatura(venda_id):
 @app.route("/carrinho")
 def carrinho():
     ids = session.get("carrinho", [])
-    # Carregamos os detalhes dos lugares e eventos do banco de dados
     itens = Lugar.select(Lugar, Evento).join(Evento).where(Lugar.id << ids) if ids else []
     total = sum(item.preco_base for item in itens)
     return render_template("carrinho.html", itens=itens, total=total)
@@ -504,7 +503,6 @@ def finalizar_carrinho():
 
     try:
         with db.atomic():
-            # 1. Buscar os lugares e verificar se ainda estão disponíveis
             lugares = Lugar.select().where(Lugar.id << ids_carrinho)
             
             for l in lugares:
@@ -512,19 +510,14 @@ def finalizar_carrinho():
                     flash(f"O lugar {l.numero if l.numero else ''} do evento {l.evento.titulo} já foi vendido.", "danger")
                     return redirect(url_for("carrinho"))
 
-            # 2. Calcular o total da venda
             total_venda = sum(l.preco_base for l in lugares)
 
-            # 3. Criar a Venda (usamos o primeiro evento como referência ou o sistema pode ser multi-evento)
-            # Nota: Na tua estrutura a Venda aponta para um Evento. Se o carrinho tiver eventos diferentes,
-            # podes associar ao evento do primeiro item ou ajustar o modelo no futuro.
             venda = Venda.create(
                 utilizador=g.utilizador, 
                 evento=lugares[0].evento, 
                 total=total_venda
             )
 
-            # 4. Criar Bilhetes e marcar Lugares como vendidos
             for l in lugares:
                 Bilhete.create(venda=venda, lugar=l, preco=l.preco_base)
                 l.vendido = True
