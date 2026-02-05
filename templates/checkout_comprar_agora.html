@@ -3,9 +3,10 @@
 {% block content %}
 <div class="container mt-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}{% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-      {% endfor %}{% endif %}
+    {% if messages %}{% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show">{{ message }}<button type="button"
+            class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endfor %}{% endif %}
     {% endwith %}
 
     <div class="row justify-content-center">
@@ -22,60 +23,82 @@
 
                     <form method="POST">
                         {% if evento.tipo == 'concerto' %}
-                            <div class="alert alert-secondary text-center mb-4">
-                                <span class="d-block small text-uppercase">Preço (Pista)</span>
-                                <h2 class="text-success fw-bold">{{ "{:,.2f}".format(lugar_sugerido.preco_base) if lugar_sugerido else "Esgotado" }}€</h2>
-                                {% if lugar_sugerido %}<input type="hidden" name="lugar_id" value="{{ lugar_sugerido.id }}">{% endif %}
-                            </div>
+                        <div class="alert alert-secondary text-center mb-4">
+                            <span class="d-block small text-uppercase">Preço (Pista)</span>
+                            <h2 class="text-success fw-bold">{{ "{:,.2f}".format(lugar_sugerido.preco_base) if
+                                lugar_sugerido else "Esgotado" }}€</h2>
+                            {% if lugar_sugerido %}<input type="hidden" name="lugar_id"
+                                value="{{ lugar_sugerido.id }}">{% endif %}
+                        </div>
                         {% else %}
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">1. Escolha a Fila:</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    {% for fila in filas %}
-                                    <a href="{{ url_for('checkout_comprar_agora', evento_id=evento.id, fila=fila) }}" 
-                                       class="btn {{ 'btn-primary' if fila == fila_selecionada else 'btn-outline-primary' }} btn-sm">
-                                        Fila {{ fila }}
-                                    </a>
-                                    {% endfor %}
-                                </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">1. Escolha a Fila:</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for fila in filas %}
+                                <a href="{{ url_for('checkout_comprar_agora', evento_id=evento.id, fila=fila) }}"
+                                    class="btn {{ 'btn-primary' if fila == fila_selecionada else 'btn-outline-primary' }} btn-sm">
+                                    Fila {{ fila }}
+                                </a>
+                                {% endfor %}
                             </div>
+                        </div>
 
-                            {% if fila_selecionada %}
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">2. Escolha o Assento na Fila {{ fila_selecionada }}:</label>
-                                <div class="d-flex flex-wrap gap-2 justify-content-center p-3 bg-light rounded border">
-                                    {% for lugar in lugares %}
-                                        {% if not lugar.vendido %}
-                                            <input type="radio" class="btn-check" name="lugar_id" value="{{ lugar.id }}" id="lugar{{ lugar.id }}" required>
-                                            <label class="btn btn-outline-success btn-sm" for="lugar{{ lugar.id }}" style="width: 45px;">
-                                                {{ lugar.numero }}
-                                            </label>
-                                        {% else %}
-                                            <button type="button" class="btn btn-secondary btn-sm" disabled style="width: 45px;">{{ lugar.numero }}</button>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                                <div class="form-text text-center mt-2">Os lugares a cinzento já estão ocupados.</div>
+                        {% if fila_selecionada %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">2. Escolha o Assento na Fila {{ fila_selecionada
+                                }}:</label>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center p-3 bg-light rounded border">
+                                {% for lugar in lugares %}
+                                {% if not lugar.vendido %}
+                                <input type="radio" class="btn-check" name="lugar_id" value="{{ lugar.id }}"
+                                    id="lugar{{ lugar.id }}" required>
+                                <label class="btn btn-outline-success btn-sm" for="lugar{{ lugar.id }}"
+                                    style="width: 45px;">
+                                    {{ lugar.numero }}
+                                </label>
+                                {% else %}
+                                <button type="button" class="btn btn-secondary btn-sm" disabled style="width: 45px;">{{
+                                    lugar.numero }}</button>
+                                {% endif %}
+                                {% endfor %}
                             </div>
-                            {% endif %}
+                            <div class="form-text text-center mt-2">Os lugares a cinzento já estão ocupados.</div>
+                        </div>
+                        {% endif %}
                         {% endif %}
 
                         <hr>
-                        
                         <div class="mb-4">
                             <label for="nif" class="form-label fw-bold">3. Dados de Faturação (NIF):</label>
-                            <input type="text" name="nif" id="nif" class="form-control" placeholder="9 dígitos" required pattern="\d{9}">
+                            <input type="text" name="nif" id="nif" class="form-control" placeholder="9 dígitos" required
+                                pattern="\d{9}">
                         </div>
-
+                        <div class="form-label"> <label class="form-label fw-bold">4. Tipo de
+                                Bilhete (Desconto de 50%):</label>
+                            <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
+                                    id="inteira" value="inteira" checked> <label class="form-check-label"
+                                    for="inteira">Tarifa Inteira</label> </div>
+                            <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
+                                    id="estudante" value="estudante"> <label class="form-check-label"
+                                    for="estudante">Estudante (50% desc.)</label> </div>
+                            <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
+                                    id="reformado" value="reformado"> <label class="form-check-label"
+                                    for="reformado">Reformado (50% desc.)</label> </div>
+                                    <br>
+                            <small class="text-muted">*
+                                Necessária apresentação de comprovativo na entrada.
+                            </small>
+                        </div>
                         <div class="d-grid gap-2">
-                            {% if (evento.tipo == 'concerto' and not lugar_sugerido) or (evento.tipo != 'concerto' and not fila_selecionada) %}
-                                <button type="button" class="btn btn-secondary btn-lg" disabled>
-                                    {{ 'Selecione uma fila primeiro' if evento.tipo != 'concerto' else 'Esgotado' }}
-                                </button>
+                            {% if (evento.tipo == 'concerto' and not lugar_sugerido) or (evento.tipo != 'concerto' and
+                            not fila_selecionada) %}
+                            <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                {{ 'Selecione uma fila primeiro' if evento.tipo != 'concerto' else 'Esgotado' }}
+                            </button>
                             {% else %}
-                                <button type="submit" class="btn btn-success btn-lg fw-bold">
-                                    <i class="bi bi-cart-check"></i> CONFIRMAR E PAGAR
-                                </button>
+                            <button type="submit" class="btn btn-success btn-lg fw-bold">
+                                <i class="bi bi-cart-check"></i> CONFIRMAR E PAGAR
+                            </button>
                             {% endif %}
                             <a href="{{ url_for('eventos') }}" class="btn btn-link text-muted">Cancelar</a>
                         </div>

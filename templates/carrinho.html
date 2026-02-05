@@ -55,6 +55,19 @@
                             <input type="text" name="nif" class="form-control" placeholder="9 dígitos" required
                                 pattern="\d{9}">
                         </div>
+                        <div class="mb-4 p-3 bg-light rounded border"> <label class="form-label fw-bold">4. Tipo de
+                                Bilhete (Desconto de 50%):</label>
+                            <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
+                                    id="inteira" value="inteira" checked> <label class="form-check-label"
+                                    for="inteira">Tarifa Inteira</label> </div>
+                            <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
+                                    id="estudante" value="estudante"> <label class="form-check-label"
+                                    for="estudante">Estudante (50% desc.)</label> </div>
+                            <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
+                                    id="reformado" value="reformado"> <label class="form-check-label"
+                                    for="reformado">Reformado (50% desc.)</label> </div> <small class="text-muted">*
+                                Necessária apresentação de comprovativo na entrada.</small>
+                        </div>
                         <button type="submit" class="btn btn-success w-100 btn-lg">FINALIZAR COMPRA</button>
                     </form>
                 </div>
