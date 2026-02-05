@@ -510,23 +510,31 @@ def finalizar_carrinho():
                     flash(f"O lugar {l.numero if l.numero else ''} do evento {l.evento.titulo} já foi vendido.", "danger")
                     return redirect(url_for("carrinho"))
 
-            total_venda = sum(l.preco_base for l in lugares)
-
-            venda = Venda.create(
-                utilizador=g.utilizador, 
-                evento=lugares[0].evento, 
-                total=total_venda
-            )
-
+            itens_por_evento = {}
             for l in lugares:
-                Bilhete.create(venda=venda, lugar=l, preco=l.preco_base)
-                l.vendido = True
-                l.save()
+                evento_id = l.evento.id
+                if evento_id not in itens_por_evento:
+                    itens_por_evento[evento_id] = []
+                itens_por_evento[evento_id].append(l)
 
-            # 5. Gerar Recibo único
-            Recibo.create(venda=venda, nif=nif, valor_total=total_venda)
+            for evento_id, lista_lugares in itens_por_evento.items():
+                
+                total_evento = sum(l.preco_base for l in lista_lugares)
+                evento_obj = lista_lugares[0].evento # Todos nesta lista são do mesmo evento agora
 
-        # Limpar carrinho após sucesso
+                venda = Venda.create(
+                    utilizador=g.utilizador, 
+                    evento=evento_obj, 
+                    total=total_evento
+                )
+
+                for l in lista_lugares:
+                    Bilhete.create(venda=venda, lugar=l, preco=l.preco_base)
+                    l.vendido = True
+                    l.save()
+
+                Recibo.create(venda=venda, nif=nif, valor_total=total_evento)
+
         session["carrinho"] = []
         flash("Compra finalizada com sucesso! Pode consultar os seus bilhetes no perfil.", "success")
         return redirect(url_for("utilizador"))
