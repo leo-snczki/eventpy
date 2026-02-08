@@ -158,16 +158,33 @@ def registro():
         telefone = request.form["telefone"]
         documento_identificacao = request.form["documento_identificacao"]
         senha = request.form["senha"]
-        user = Utilizador(
-            nome=nome,
-            email=email,
-            telefone=telefone,
-            documento_identificacao=documento_identificacao,
-        )
-        user.set_senha(senha)
-        user.save()
-        flash("Registro bem-sucedido! Por favor, faça login.", "success")
-        return redirect(url_for("login"))
+        confirmar_senha = request.form["confirmar_senha"]
+
+        if senha != confirmar_senha:
+            flash("As palavras-passe não coincidem.", "danger")
+            return redirect(url_for("registro"))
+
+        try:
+            user = Utilizador(
+                nome=nome,
+                email=email,
+                telefone=telefone,
+                documento_identificacao=documento_identificacao,
+            )
+            user.set_senha(senha)
+            user.save()
+            
+            flash("Registro bem-sucedido! Por favor, faça login.", "success")
+            return redirect(url_for("login"))
+
+        except IntegrityError:
+            flash("Este email já está registado. Tente outro ou recupere a conta.", "warning")
+            return redirect(url_for("registro"))
+            
+        except Exception as e:
+            flash("Ocorreu um erro inesperado no registo.", "danger")
+            print(f"Erro: {e}")
+
     return render_template("registro.html")
 
 
