@@ -58,18 +58,17 @@ def checkout_comprar_agora(evento_id):
         flash("Evento não encontrado.", "danger")
         return redirect(url_for("eventos"))
 
+    # ... (Lógica de carregar lugares mantém-se igual) ...
     lugar_sugerido = None
     filas = []
     lugares_da_fila = []
     fila_selecionada = request.args.get("fila")
 
     if evento.tipo == Evento.TIPO_CONCERTO:
-        # Pega o lugar de pista mais barato
         lugar_sugerido = (Lugar.select()
                           .where((Lugar.evento == evento) & (Lugar.tipo == Lugar.TIPO_PISTA) & (Lugar.vendido == False))
                           .order_by(Lugar.preco_base.asc()).first())
     else:
-        # Lógica de Teatro/Palestra: Carregar Filas
         filas_query = (Lugar.select(Lugar.fila)
                        .where((Lugar.evento == evento) & (Lugar.fila.is_null(False)))
                        .distinct().order_by(Lugar.fila))
@@ -83,6 +82,7 @@ def checkout_comprar_agora(evento_id):
     if request.method == "POST":
         lugar_id = request.form.get("lugar_id")
         nif = request.form.get("nif")
+        tipo_desconto = request.form.get("tipo_desconto", "inteira") # Captura o tipo
 
         if not lugar_id:
             flash("Selecione um lugar antes de confirmar.", "warning")
@@ -94,15 +94,27 @@ def checkout_comprar_agora(evento_id):
                         flash("Este lugar já não está disponível.", "danger")
                         return redirect(url_for("checkout_comprar_agora", evento_id=evento.id))
 
-                    venda = Venda.create(utilizador=g.utilizador, evento=evento, total=lugar.preco_base)
-                    Bilhete.create(venda=venda, lugar=lugar, preco=lugar.preco_base)
+                    # CALCULA O PREÇO COM DESCONTO
+                    preco_final = calcular_preco_final(lugar.preco_base, tipo_desconto)
+
+                    venda = Venda.create(utilizador=g.utilizador, evento=evento, total=preco_final)
+                    
+                    # Guarda o preço pago e o tipo de desconto no bilhete
+                    Bilhete.create(
+                        venda=venda, 
+                        lugar=lugar, 
+                        preco=preco_final,
+                        tipo_desconto=tipo_desconto 
+                    )
+                    
                     lugar.vendido = True
                     lugar.save()
-                    Recibo.create(venda=venda, nif=nif, valor_total=lugar.preco_base)
+                    Recibo.create(venda=venda, nif=nif, valor_total=preco_final)
 
-                flash("Compra realizada com sucesso!", "success")
+                flash(f"Compra realizada! Tipo: {tipo_desconto.capitalize()}", "success")
                 return redirect(url_for("utilizador"))
-            except Exception:
+            except Exception as e:
+                print(e)
                 flash("Erro ao processar a compra.", "danger")
 
     return render_template("checkout_comprar_agora.html", 
@@ -489,17 +501,18 @@ def carrinho():
 @app.route("/carrinho/finalizar", methods=["POST"])
 def finalizar_carrinho():
     if g.utilizador is None:
-        flash("Precisa de iniciar sessão para finalizar a compra.", "warning")
+        flash("Precisa de iniciar sessão.", "warning")
         return redirect(url_for("login"))
 
     ids_carrinho = session.get("carrinho", [])
     if not ids_carrinho:
-        flash("O seu carrinho está vazio.", "warning")
+        flash("O carrinho está vazio.", "warning")
         return redirect(url_for("eventos"))
 
     nif = request.form.get("nif")
+    tipo_desconto = request.form.get("tipo_desconto", "inteira")
     if not nif or len(nif) != 9:
-        flash("Por favor, insira um NIF válido com 9 dígitos.", "danger")
+        flash("Insira um NIF válido.", "danger")
         return redirect(url_for("carrinho"))
 
     try:
@@ -508,20 +521,22 @@ def finalizar_carrinho():
             
             for l in lugares:
                 if l.vendido:
-                    flash(f"O lugar {l.numero if l.numero else ''} do evento {l.evento.titulo} já foi vendido.", "danger")
+                    flash(f"O lugar {l.numero or 'Pista'} já foi vendido.", "danger")
                     return redirect(url_for("carrinho"))
 
             itens_por_evento = {}
             for l in lugares:
-                evento_id = l.evento.id
-                if evento_id not in itens_por_evento:
-                    itens_por_evento[evento_id] = []
-                itens_por_evento[evento_id].append(l)
+                if l.evento.id not in itens_por_evento:
+                    itens_por_evento[l.evento.id] = []
+                itens_por_evento[l.evento.id].append(l)
 
             for evento_id, lista_lugares in itens_por_evento.items():
                 
-                total_evento = sum(l.preco_base for l in lista_lugares)
-                evento_obj = lista_lugares[0].evento # Todos nesta lista são do mesmo evento agora
+                total_evento = 0
+                for l in lista_lugares:
+                    total_evento += calcular_preco_final(l.preco_base, tipo_desconto)
+
+                evento_obj = lista_lugares[0].evento 
 
                 venda = Venda.create(
                     utilizador=g.utilizador, 
@@ -530,14 +545,22 @@ def finalizar_carrinho():
                 )
 
                 for l in lista_lugares:
-                    Bilhete.create(venda=venda, lugar=l, preco=l.preco_base)
+                    preco_item = calcular_preco_final(l.preco_base, tipo_desconto)
+                    
+                    Bilhete.create(
+                        venda=venda, 
+                        lugar=l, 
+                        preco=preco_item,
+                        tipo_desconto=tipo_desconto
+                    )
+                    
                     l.vendido = True
                     l.save()
 
                 Recibo.create(venda=venda, nif=nif, valor_total=total_evento)
 
         session["carrinho"] = []
-        flash("Compra finalizada com sucesso! Pode consultar os seus bilhetes no perfil.", "success")
+        flash("Compra finalizada com sucesso!", "success")
         return redirect(url_for("utilizador"))
 
     except Exception as e:
@@ -671,7 +694,6 @@ def admin_gerir_lugares(evento_id):
             
         return redirect(url_for("admin_gerir_lugares", evento_id=evento.id))
 
-    # Resumo dos lugares atuais
     total_lugares = Lugar.select().where(Lugar.evento == evento).count()
     lugares_vendidos = Lugar.select().where((Lugar.evento == evento) & (Lugar.vendido == True)).count()
     
@@ -679,6 +701,14 @@ def admin_gerir_lugares(evento_id):
                            evento=evento, 
                            total=total_lugares, 
                            vendidos=lugares_vendidos)
+
+def calcular_preco_final(preco_base, tipo_desconto):
+    preco_base = float(preco_base)
+    if tipo_desconto in ["estudante", "reformado"]:
+        return preco_base * 0.5  # 50% de desconto
+    return preco_base # Preço inteiro
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

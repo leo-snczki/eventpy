@@ -25,8 +25,12 @@
                         {% if evento.tipo == 'concerto' %}
                         <div class="alert alert-secondary text-center mb-4">
                             <span class="d-block small text-uppercase">Preço (Pista)</span>
-                            <h2 class="text-success fw-bold">{{ "{:,.2f}".format(lugar_sugerido.preco_base) if
-                                lugar_sugerido else "Esgotado" }}€</h2>
+                            <h2 class="text-success fw-bold">
+                                <span id="display-preco"
+                                    data-valor-base="{{ lugar_sugerido.preco_base if lugar_sugerido else 0 }}">
+                                    {{ "{:,.2f}".format(lugar_sugerido.preco_base) if lugar_sugerido else "esgotado" }}
+                                </span>€
+                            </h2>
                             {% if lugar_sugerido %}<input type="hidden" name="lugar_id"
                                 value="{{ lugar_sugerido.id }}">{% endif %}
                         </div>
@@ -84,7 +88,7 @@
                             <div class="form-check"> <input class="form-check-input" type="radio" name="tipo_desconto"
                                     id="reformado" value="reformado"> <label class="form-check-label"
                                     for="reformado">Reformado (50% desc.)</label> </div>
-                                    <br>
+                            <br>
                             <small class="text-muted">*
                                 Necessária apresentação de comprovativo na entrada.
                             </small>
@@ -108,4 +112,18 @@
         </div>
     </div>
 </div>
+<script>
+    document.querySelectorAll('input[name="tipo_desconto"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const display = document.getElementById('display-preco');
+            const valorBase = parseFloat(display.getAttribute('data-valor-base'));
+
+            if (this.value === 'estudante' || this.value === 'reformado') {
+                display.innerText = (valorBase * 0.5).toFixed(2);
+            } else {
+                display.innerText = valorBase.toFixed(2);
+            }
+        });
+    });
+</script>
 {% endblock %}
