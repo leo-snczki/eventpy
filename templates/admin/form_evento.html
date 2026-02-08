@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h4>{{ 'Editar Evento' if evento else 'Novo Evento' }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" name="titulo" class="form-control" value="{{ evento.titulo if evento else '' }}" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tipo</label>
+                                <select name="tipo" class="form-select">
+                                    <option value="concerto" {% if evento and evento.tipo == 'concerto' %}selected{% endif %}>Concerto</option>
+                                    <option value="teatros" {% if evento and evento.tipo == 'teatros' %}selected{% endif %}>Teatro</option>
+                                    <option value="Palestras" {% if evento and evento.tipo == 'Palestras' %}selected{% endif %}>Palestra</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Data e Hora</label>
+                                <input type="datetime-local" name="data_hora" class="form-control" 
+                                       value="{{ evento.data_hora.strftime('%Y-%m-%dT%H:%M') if evento else '' }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Local</label>
+                            <input type="text" name="local" class="form-control" value="{{ evento.local if evento else '' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Duração (minutos)</label>
+                            <input type="number" name="duracao" class="form-control" value="{{ evento.duracao if evento else '' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descrição</label>
+                            <textarea name="descricao" class="form-control" rows="4">{{ evento.descricao if evento else '' }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Guardar Evento</button>
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-link w-100 text-center mt-2">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

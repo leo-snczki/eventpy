@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Stock de Lugares: <span class="text-primary">{{ evento.titulo }}</span></h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Voltar</a>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Tipo de Evento:</strong> {{ evento.tipo|capitalize }} <br>
+        <strong>Resumo:</strong> {{ total }} lugares criados | {{ vendidos }} vendidos
+    </div>
+
+    <div class="row justify-content-center">
+        
+        {% if evento.tipo == 'concerto' %}
+        <div class="col-md-6">
+            <div class="card h-100 border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-people-fill"></i> Adicionar Pista (Geral)
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="acao" value="pista">
+                        
+                        <div class="mb-3">
+                            <label>Quantidade de Bilhetes</label>
+                            <input type="number" name="quantidade" class="form-control" min="1" required>
+                            <div class="form-text">Para concertos, apenas lugares de pé (pista) são permitidos.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label>Preço (€)</label>
+                            <input type="number" step="0.01" name="preco" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">Gerar Bilhetes de Pista</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if evento.tipo != 'concerto' %}
+        <div class="col-md-6">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-grid-3x3"></i> Adicionar Lugares Marcados
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="acao" value="sentado">
+                        
+                        <div class="mb-3">
+                            <label>Tipo</label>
+                            <select name="tipo_lugar" class="form-select">
+                                <option value="bancada">Bancada</option>
+                                <option value="camarote">Camarote</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-4 mb-3">
+                                <label>Fila (Letra)</label>
+                                <input type="text" name="fila" class="form-control" placeholder="A" required maxlength="2" style="text-transform:uppercase">
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label>Nº Início</label>
+                                <input type="number" name="inicio" class="form-control" placeholder="1" required>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label>Nº Fim</label>
+                                <input type="number" name="fim" class="form-control" placeholder="20" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Preço (€)</label>
+                            <input type="number" step="0.01" name="preco" class="form-control" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">Gerar Lugares em Série</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

@@ -10,6 +10,7 @@ from datetime import datetime
 from models import Recibo, Utilizador, Evento, Lugar, Venda, Bilhete, db
 from dotenv import load_dotenv
 from peewee import *
+from functools import wraps
 
 load_dotenv()
 
@@ -543,6 +544,141 @@ def finalizar_carrinho():
         print(f"Erro no checkout: {e}")
         flash("Ocorreu um erro ao processar o seu pedido.", "danger")
         return redirect(url_for("carrinho"))
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.utilizador is None or not g.utilizador.is_admin:
+            flash("Acesso não autorizado.", "danger")
+            return redirect(url_for("index"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route("/admin")
+@admin_required
+def admin_dashboard():
+    # Estatísticas simples
+    total_vendas = Venda.select().count()
+    total_receita = Venda.select(fn.SUM(Venda.total)).scalar() or 0
+    total_users = Utilizador.select().count()
+    eventos = Evento.select().order_by(Evento.data_hora.desc())
+    
+    return render_template("admin/dashboard.html", 
+                           total_vendas=total_vendas, 
+                           total_receita=total_receita,
+                           total_users=total_users,
+                           eventos=eventos)
+
+@app.route("/admin/evento/novo", methods=["GET", "POST"])
+@admin_required
+def admin_novo_evento():
+    if request.method == "POST":
+        try:
+            # Converter data string para objeto datetime
+            data_str = request.form["data_hora"] # Formato HTML datetime-local: YYYY-MM-DDTHH:MM
+            data_obj = datetime.strptime(data_str, "%Y-%m-%dT%H:%M")
+            
+            Evento.create(
+                titulo=request.form["titulo"],
+                descricao=request.form["descricao"],
+                tipo=request.form["tipo"],
+                local=request.form["local"],
+                data_hora=data_obj,
+                duracao=int(request.form["duracao"])
+            )
+            flash("Evento criado com sucesso!", "success")
+            return redirect(url_for("admin_dashboard"))
+        except Exception as e:
+            flash(f"Erro ao criar evento: {e}", "danger")
+            
+    return render_template("admin/form_evento.html", evento=None)
+
+@app.route("/admin/evento/editar/<int:evento_id>", methods=["GET", "POST"])
+@admin_required
+def admin_editar_evento(evento_id):
+    evento = Evento.get_or_none(Evento.id == evento_id)
+    if not evento:
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        try:
+            data_str = request.form["data_hora"]
+            evento.data_hora = datetime.strptime(data_str, "%Y-%m-%dT%H:%M")
+            
+            evento.titulo = request.form["titulo"]
+            evento.descricao = request.form["descricao"]
+            evento.tipo = request.form["tipo"]
+            evento.local = request.form["local"]
+            evento.duracao = int(request.form["duracao"])
+            evento.save()
+            
+            flash("Evento atualizado!", "success")
+            return redirect(url_for("admin_dashboard"))
+        except Exception as e:
+            flash(f"Erro: {e}", "danger")
+
+    return render_template("admin/form_evento.html", evento=evento)
+
+@app.route("/admin/evento/apagar/<int:evento_id>", methods=["POST"])
+@admin_required
+def admin_apagar_evento(evento_id):
+    evento = Evento.get_or_none(Evento.id == evento_id)
+    if evento:
+        evento.delete_instance()
+        flash("Evento apagado.", "success")
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin/evento/<int:evento_id>/lugares", methods=["GET", "POST"])
+@admin_required
+def admin_gerir_lugares(evento_id):
+    evento = Evento.get_or_none(Evento.id == evento_id)
+    if not evento: return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        acao = request.form.get("acao")
+        preco = float(request.form.get("preco"))
+        
+        try:
+            with db.atomic():
+                if acao == "pista":
+                    qtd = int(request.form.get("quantidade"))
+                    dados = [{'evento': evento, 'tipo': Lugar.TIPO_PISTA, 'preco_base': preco} for _ in range(qtd)]
+                    Lugar.insert_many(dados).execute()
+                    flash(f"{qtd} lugares de pista adicionados!", "success")
+
+                elif acao == "sentado":
+                    tipo_lugar = request.form.get("tipo_lugar") # bancada ou camarote
+                    fila = request.form.get("fila").upper()
+                    inicio = int(request.form.get("inicio"))
+                    fim = int(request.form.get("fim"))
+                    
+                    dados = []
+                    for n in range(inicio, fim + 1):
+                        dados.append({
+                            'evento': evento, 
+                            'tipo': tipo_lugar, 
+                            'fila': fila, 
+                            'numero': n, 
+                            'preco_base': preco
+                        })
+                    Lugar.insert_many(dados).execute()
+                    flash(f"Lugares {fila}{inicio}-{fim} adicionados!", "success")
+                    
+        except IntegrityError:
+            flash("Erro: Lugares duplicados ou dados inválidos.", "danger")
+        except Exception as e:
+            flash(f"Erro: {e}", "danger")
+            
+        return redirect(url_for("admin_gerir_lugares", evento_id=evento.id))
+
+    # Resumo dos lugares atuais
+    total_lugares = Lugar.select().where(Lugar.evento == evento).count()
+    lugares_vendidos = Lugar.select().where((Lugar.evento == evento) & (Lugar.vendido == True)).count()
+    
+    return render_template("admin/gerir_lugares.html", 
+                           evento=evento, 
+                           total=total_lugares, 
+                           vendidos=lugares_vendidos)
 
 if __name__ == "__main__":
     app.run(debug=True)

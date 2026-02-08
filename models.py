@@ -11,6 +11,7 @@ class BaseModel(Model):
 class Utilizador(BaseModel):
     nome = CharField()
     email = CharField(unique=True)
+    is_admin = BooleanField(default=False)
     telefone = CharField()
     documento_identificacao = CharField()
     senha_hash = CharField()
